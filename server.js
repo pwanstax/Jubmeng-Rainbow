@@ -2,19 +2,19 @@ import express from "express";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import {customLogger} from "./middlewares/logger.middleware.js";
-import {customCORS} from "./middlewares/cors.middleware.js";
-import {errorHandler} from "./middlewares/error-handler.middleware.js";
+import { customLogger } from "./middlewares/logger.middleware.js";
+import { customCORS } from "./middlewares/cors.middleware.js";
+import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import routes from "./routes/index.js";
 
 import "./configs/passport.config.js";
 
-dotenv.config({path: ".env"});
+dotenv.config({ path: ".env" });
 const isProduction = process.env.NODE_ENV === "production";
 
 const app = express();
 
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(customLogger);
 app.use(customCORS);
@@ -29,7 +29,7 @@ mongoose.set("strictQuery", true);
 if (isProduction) {
   mongoose.connect(process.env.MONGODB_URI);
 } else {
-  mongoose.connect("mongodb://localhost:27017/testDatabase");
+  mongoose.connect("mongodb://localhost:27017/testDatabase2");
   mongoose.set("debug", true);
 }
 
