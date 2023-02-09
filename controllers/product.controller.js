@@ -12,8 +12,10 @@ export const createProduct = (req, res, next) => {
     status,
     description,
     province,
+    location_description,
     latitude,
     longitude,
+    tags,
     images,
     license_id,
     place_type,
@@ -22,7 +24,7 @@ export const createProduct = (req, res, next) => {
   const type = req.params.type;
   let product;
   if (type == "clinic") product = new Clinic();
-  else if (type == "service") product = Service();
+  else if (type == "service") product = new Service();
   else if (type == "petfriendly") product = new PetFriendly();
   else {
     return res.status(500).json({
@@ -38,8 +40,10 @@ export const createProduct = (req, res, next) => {
   if (status) product.status = status;
   if (description) product.description = description;
   if (province) product.province = province;
+  if (location_description) product.location_description = location_description;
   if (latitude && longitude) product.setLocation(latitude, longitude);
   if (images) product.images = images;
+  if (tags) product.tags = tags;
   if (license_id) product.license_id = license_id;
   if (type == "petfriendly" && place_type) product.place_type = place_type;
 
@@ -65,6 +69,8 @@ const default_show_attrs = {
   location: 1,
   status: 1,
   images: 1,
+  location_description: 1,
+  tags: 1,
 };
 
 export const getEachProducts = async (req, res, next) => {
@@ -86,16 +92,16 @@ export const getEachProducts = async (req, res, next) => {
   try {
     const products = await Product.find(condition, show_attrs).lean();
     for (const product of products) {
-      console.log("HI", product);
       if (product.images && product.images.length) {
         product.image = product.images[0];
         delete product.images;
       }
-      const user_image = await User.findOne(
-        {username: product.owner},
-        {image: 1}
-      );
-      product.user_image = user_image.image;
+      // const user_image = await User.findOne(
+      //   {username: product.owner},
+      //   {image: 1}
+      // );
+      // console.log("HI", user_image);
+      // product.user_image = user_image.image;
     }
     return res.json(products);
   } catch (err) {
