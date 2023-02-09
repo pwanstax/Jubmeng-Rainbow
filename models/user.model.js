@@ -25,7 +25,11 @@ const UserSchema = new mongoose.Schema(
       match: [/\S+@\S+\.\S+/, "is invalid"],
       index: true,
     },
-    image: String,
+    image: {
+      type: String,
+      default:
+        "https://img.freepik.com/premium-vector/cute-white-cat-cartoon-vector-illustration_42750-808.jpg?w=2000",
+    },
     hash: String,
     salt: String,
     isSeller: {

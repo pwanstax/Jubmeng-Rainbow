@@ -58,15 +58,18 @@ export const createProduct = (req, res, next) => {
     });
 };
 
+const default_show_attrs = {
+  owner: 1,
+  name: 1,
+  province: 1,
+  location: 1,
+  status: 1,
+  images: 1,
+};
+
 export const getEachProducts = async (req, res, next) => {
   let condition = {};
-  let show_attrs = {
-    owner: 1,
-    name: 1,
-    province: 1,
-    location: 1,
-    status: 1,
-  };
+  let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
   let Product;
   const type = req.params.type;
   if (type == "clinic") Product = Clinic;
@@ -82,6 +85,18 @@ export const getEachProducts = async (req, res, next) => {
   }
   try {
     const products = await Product.find(condition, show_attrs).lean();
+    for (const product of products) {
+      console.log("HI", product);
+      if (product.images && product.images.length) {
+        product.image = product.images[0];
+        delete product.images;
+      }
+      const user_image = await User.findOne(
+        {username: product.owner},
+        {image: 1}
+      );
+      product.user_image = user_image.image;
+    }
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
@@ -90,13 +105,7 @@ export const getEachProducts = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   let condition = {};
-  let show_attrs = {
-    owner: 1,
-    name: 1,
-    province: 1,
-    location: 1,
-    status: 1,
-  };
+  let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
 
   try {
     const clinics = await Clinic.find(condition, show_attrs).lean();
@@ -104,8 +113,21 @@ export const getProducts = async (req, res, next) => {
     show_attrs.place_type = 1;
     const petfriendlies = await PetFriendly.find(condition, show_attrs).lean();
 
-    const all = clinics.concat(services, petfriendlies);
-    return res.json(all);
+    const products = clinics.concat(services, petfriendlies);
+
+    for (const product of products) {
+      if (product.images && product.images.length) {
+        product.image = product.images[0];
+        delete product.images;
+      }
+      const user_image = await User.findOne(
+        {username: product.owner},
+        {image: 1}
+      );
+      product.user_image = user_image.image;
+    }
+
+    return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
