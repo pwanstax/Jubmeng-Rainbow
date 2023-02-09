@@ -48,3 +48,16 @@ export const login = (req, res, next) => {
     }
   })(req, res, next);
 };
+
+export const setSeller = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    await User.findByIdAndUpdate(id, {isSeller: true});
+    return res.json({
+      id: id,
+      message: "This user account has been set to be a seller",
+    });
+  } catch (err) {
+    return res.status(500).json({message: err.message});
+  }
+};

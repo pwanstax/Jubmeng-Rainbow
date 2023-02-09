@@ -20,7 +20,7 @@ export const createProduct = (req, res, next) => {
   } = req.body.product;
 
   const type = req.params.type;
-  let product = new Clinic(); //must change
+  let product;
   if (type == "clinic") product = new Clinic();
   else if (type == "service") product = Service();
   else if (type == "petfriendly") product = new PetFriendly();
@@ -46,7 +46,7 @@ export const createProduct = (req, res, next) => {
   product
     .save()
     .then(function () {
-      return res.json({ product: product.toAuthJSON() });
+      return res.json({product: product.toAuthJSON()});
     })
     .catch(function (error) {
       if (error.code === 11000) {
@@ -84,7 +84,7 @@ export const getEachProducts = async (req, res, next) => {
     const products = await Product.find(condition, show_attrs).lean();
     return res.json(products);
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({message: err.message});
   }
 };
 
@@ -107,7 +107,7 @@ export const getProducts = async (req, res, next) => {
     const all = clinics.concat(services, petfriendlies);
     return res.json(all);
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({message: err.message});
   }
 };
 
@@ -128,6 +128,6 @@ export const getProductInfo = async (req, res, next) => {
     const product = await Product.findById(id).lean();
     return res.json(product);
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({message: err.message});
   }
 };
