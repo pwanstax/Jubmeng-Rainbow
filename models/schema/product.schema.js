@@ -35,6 +35,10 @@ const Product = {
     type: String,
     required: [true, "can't be blank"],
   },
+  location_description: {
+    type: String,
+    required: [true, "can't be blank"],
+  },
   location: {
     //GeoJSON
 
@@ -48,6 +52,10 @@ const Product = {
       required: [true, "can't be blank"],
     },
     //required: [true, "can't be blank"],
+  },
+  tags: {
+    type: [String], //[long,lat]
+    required: [true, "can't be blank"],
   },
   images: {
     type: [String],
