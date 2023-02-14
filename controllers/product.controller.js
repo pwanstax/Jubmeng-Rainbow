@@ -71,6 +71,7 @@ const default_show_attrs = {
   images: 1,
   location_description: 1,
   tags: 1,
+  description: 1,
 };
 
 export const getEachProducts = async (req, res, next) => {
@@ -88,6 +89,13 @@ export const getEachProducts = async (req, res, next) => {
       message:
         "request parameter must be 'clinic' or 'service' or 'petfriendly'",
     });
+  }
+
+  if (req.query.name) {
+    condition.$or = [
+      {name: {$regex: req.query.name, $options: "i"}},
+      {description: {$regex: req.query.name, $options: "i"}},
+    ];
   }
   try {
     const products = await Product.find(condition, show_attrs).lean();
@@ -113,6 +121,12 @@ export const getProducts = async (req, res, next) => {
   let condition = {};
   let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
 
+  if (req.query.name) {
+    condition.$or = [
+      {name: {$regex: req.query.name, $options: "i"}},
+      {description: {$regex: req.query.name, $options: "i"}},
+    ];
+  }
   try {
     const clinics = await Clinic.find(condition, show_attrs).lean();
     const services = await Service.find(condition, show_attrs).lean();
