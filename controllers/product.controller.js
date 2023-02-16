@@ -12,13 +12,19 @@ export const createProduct = (req, res, next) => {
     status,
     description,
     province,
+    amphure,
+    tambon,
     location_description,
     latitude,
     longitude,
     tags,
     images,
     license_id,
+    open_hours,
     place_type,
+    rating,
+    review_counts,
+    prices,
   } = req.body.product;
 
   const type = req.params.type;
@@ -40,11 +46,17 @@ export const createProduct = (req, res, next) => {
   if (status) product.status = status;
   if (description) product.description = description;
   if (province) product.province = province;
+  if (amphure) product.amphure = amphure;
+  if (tambon) product.tambon = tambon;
   if (location_description) product.location_description = location_description;
   if (latitude && longitude) product.setLocation(latitude, longitude);
   if (images) product.images = images;
   if (tags) product.tags = tags;
   if (license_id) product.license_id = license_id;
+  if (open_hours) product.setOpenHours(open_hours);
+  if (rating) product.rating = rating;
+  if (review_counts) product.review_counts = review_counts;
+  if (prices) product.prices = prices;
   if (type == "petfriendly" && place_type) product.place_type = place_type;
 
   product
@@ -66,12 +78,26 @@ const default_show_attrs = {
   owner: 1,
   name: 1,
   province: 1,
+  amphure: 1,
+  tambon: 1,
   location: 1,
   status: 1,
   images: 1,
   location_description: 1,
   tags: 1,
+  rating: 1,
+  review_counts: 1,
   description: 1,
+};
+
+const buildReturnedData = (products) => {
+  for (const product of products) {
+    if (product.images && product.images.length) {
+      product.image = product.images[0];
+      delete product.images;
+    }
+  }
+  return products;
 };
 
 export const getEachProducts = async (req, res, next) => {
@@ -97,21 +123,10 @@ export const getEachProducts = async (req, res, next) => {
       {description: {$regex: req.query.name, $options: "i"}},
     ];
   }
+
   try {
     const products = await Product.find(condition, show_attrs).lean();
-    for (const product of products) {
-      if (product.images && product.images.length) {
-        product.image = product.images[0];
-        delete product.images;
-      }
-      // const user_image = await User.findOne(
-      //   {username: product.owner},
-      //   {image: 1}
-      // );
-      // console.log("HI", user_image);
-      // product.user_image = user_image.image;
-    }
-    return res.json(products);
+    return res.json(buildReturnedData(products));
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
@@ -135,19 +150,7 @@ export const getProducts = async (req, res, next) => {
 
     const products = clinics.concat(services, petfriendlies);
 
-    for (const product of products) {
-      if (product.images && product.images.length) {
-        product.image = product.images[0];
-        delete product.images;
-      }
-      const user_image = await User.findOne(
-        {username: product.owner},
-        {image: 1}
-      );
-      product.user_image = user_image.image;
-    }
-
-    return res.json(products);
+    return res.json(buildReturnedData(products));
   } catch (err) {
     return res.status(500).json({message: err.message});
   }

@@ -29,9 +29,18 @@ const Product = {
     type: String,
     required: [true, "can't be blank"],
     enum: ["Pending", "Verified", "Unavailable", "Available"],
+    default: "Pending",
   },
   description: String,
   province: {
+    type: String,
+    required: [true, "can't be blank"],
+  },
+  amphure: {
+    type: String,
+    required: [true, "can't be blank"],
+  },
+  tambon: {
     type: String,
     required: [true, "can't be blank"],
   },
@@ -60,6 +69,69 @@ const Product = {
   images: {
     type: [String],
     validate: (v) => Array.isArray(v) && v.length > 0,
+  },
+  open_hours: {
+    type: [
+      {
+        day: {
+          type: String,
+          required: [true, "can't be blank"],
+          enum: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        },
+        periods: {
+          type: [
+            {
+              open_at: {
+                type: Number,
+                min: 0,
+                max: 1440,
+                required: [true, "can't be blank"],
+              },
+              close_at: {
+                type: Number,
+                min: 0,
+                max: 1440,
+                required: [true, "can't be blank"],
+              },
+            },
+          ],
+          validate: (v) => Array.isArray(v) && v.length > 0,
+        },
+      },
+    ],
+    validate: (v) => Array.isArray(v) && v.length > 0,
+  },
+  manual_close: {
+    type: Boolean,
+    required: [true, "can't be blank"],
+    default: false,
+  },
+  rating: {
+    type: Number,
+    min: 0,
+    max: 5,
+    required: [true, "can't be blank"],
+    default: 5,
+  },
+  review_counts: {
+    type: Number,
+    min: 0,
+    required: [true, "can't be blank"],
+    default: 0,
+  },
+  prices: {
+    type: [
+      {
+        service: {
+          type: String,
+          required: [true, "can't be blank"],
+        },
+        price: {
+          type: Number,
+          required: [true, "can't be blank"],
+        },
+      },
+    ],
   },
 };
 
