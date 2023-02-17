@@ -14,7 +14,10 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       unique: true,
       required: [true, "can't be blank"],
-      match: [/^[a-zA-Z0-9]+$/, "is invalid"],
+      match: [
+        /^(?=.{1,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/,
+        "is invalid",
+      ],
       index: true,
     },
     email: {
@@ -27,15 +30,49 @@ const UserSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default:
-        "https://img.freepik.com/premium-vector/cute-white-cat-cartoon-vector-illustration_42750-808.jpg?w=2000",
+      default: "https://pic.onlinewebfonts.com/svg/img_264157.png",
     },
-    hash: String,
-    salt: String,
+    ownProducts: {
+      type: [String],
+      default: [],
+    },
+    prefix: {
+      type: String,
+      default: "",
+    },
+    firstName: {
+      type: String,
+      default: "",
+    },
+    lastName: {
+      type: String,
+      default: "",
+    },
+    phoneNumber: {
+      type: String,
+      default: "",
+    },
     isSeller: {
       type: Boolean,
       default: false,
     },
+    rating: {
+      type: Number,
+      required: [true, "can't be blank"],
+      default: 5,
+      min: 0,
+      max: 5,
+    },
+    rentedCount: {
+      type: Number,
+      default: 0,
+    },
+    rentedOutCount: {
+      type: Number,
+      default: 0,
+    },
+    hash: String,
+    salt: String,
   },
   {timestamps: true}
 );
@@ -70,11 +107,21 @@ UserSchema.methods.generateJWT = function () {
 };
 
 UserSchema.methods.toAuthJSON = function () {
+  return this.generateJWT();
+};
+UserSchema.methods.getIdJSON = function () {
+  return {
+    user_id: this._id,
+    username: this.username,
+  };
+};
+
+UserSchema.methods.getNavbarJSON = function () {
   return {
     username: this.username,
-    email: this.email,
-    token: this.generateJWT(),
+    user_id: this._id,
     image: this.image,
+    isLessor: this.isSeller,
   };
 };
 
