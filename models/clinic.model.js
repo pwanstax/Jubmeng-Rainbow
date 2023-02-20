@@ -17,10 +17,8 @@ ClinicSchema.methods.setLocation = function (latitude, longitude) {
 
 ClinicSchema.methods.setOpenHours = function (open_hours) {
   let new_open_hours = open_hours;
-  console.log("Hi");
 
   for (const day of new_open_hours) {
-    console.log(day);
     for (let e of day.periods) {
       console.log(e);
       const open_times = e.open_at.split(":");

@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import Clinic from "../models/clinic.model.js";
 import Service from "../models/service.model.js";
 import PetFriendly from "../models/petfriendly.model.js";
-
+import {filterByOpen} from "../utils/product.utils.js";
 export const createProduct = (req, res, next) => {
   const {
     owner,
@@ -25,6 +25,7 @@ export const createProduct = (req, res, next) => {
     rating,
     review_counts,
     prices,
+    manual_close,
   } = req.body.product;
 
   const type = req.params.type;
@@ -58,6 +59,7 @@ export const createProduct = (req, res, next) => {
   if (review_counts) product.review_counts = review_counts;
   if (prices) product.prices = prices;
   if (type == "petfriendly" && place_type) product.place_type = place_type;
+  if (manual_close) product.manual_close = manual_close;
 
   product
     .save()
@@ -88,6 +90,7 @@ const default_show_attrs = {
   rating: 1,
   review_counts: 1,
   description: 1,
+  open_hours: 1,
 };
 
 const buildReturnedData = (products) => {
@@ -97,6 +100,7 @@ const buildReturnedData = (products) => {
       delete product.images;
     }
   }
+
   return products;
 };
 
@@ -125,8 +129,8 @@ export const getEachProducts = async (req, res, next) => {
   }
 
   try {
-    const products = await Product.find(condition, show_attrs).lean();
-    return res.json(buildReturnedData(products));
+    const products = await filterByOpen(Product, condition, show_attrs);
+    return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
@@ -143,14 +147,18 @@ export const getProducts = async (req, res, next) => {
     ];
   }
   try {
-    const clinics = await Clinic.find(condition, show_attrs).lean();
-    const services = await Service.find(condition, show_attrs).lean();
+    const clinics = await filterByOpen(Clinic, condition, show_attrs);
+    const services = await filterByOpen(Service, condition, show_attrs);
     show_attrs.place_type = 1;
-    const petfriendlies = await PetFriendly.find(condition, show_attrs).lean();
+    const petfriendlies = await filterByOpen(
+      PetFriendly,
+      condition,
+      show_attrs
+    );
 
     const products = clinics.concat(services, petfriendlies);
 
-    return res.json(buildReturnedData(products));
+    return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
