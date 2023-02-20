@@ -75,6 +75,62 @@ export const setSeller = async (req, res, next) => {
   }
 };
 
+export const addUserInfo = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    let user = await User.findById(id);
+    if (user == null) {
+      res.status(404).json({message: "Cannot find user"});
+    } else {
+      if (req.body.username != null) user.username = req.body.username;
+      if (req.body.image != null) user.image = req.body.image;
+      if (req.body.ownProducts != null) user.ownProducts = req.body.ownProducts;
+      if (req.body.isSeller != null) user.isSeller = req.body.isSeller;
+      if (req.body.firstName != null) user.firstName = req.body.firstName;
+      if (req.body.lastName != null) user.lastName = req.body.lastName;
+      if (req.body.phoneNumber != null) user.phoneNumber = req.body.phoneNumber;
+      if (req.body.prefix != null) user.prefix = req.body.prefix;
+
+      user
+        .save()
+        .then(function () {
+          return res.send("Complete!");
+        })
+        .catch(function (error) {
+          if (error.code === 11000) {
+            return res.status(400).send({error: "Username already exists"});
+          }
+          next(error);
+        });
+    }
+  } catch (error) {
+    res.status(500).json({message: error.message});
+  }
+};
+
+export const getUserInfo = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    let user = await User.findById(id);
+    if (user == null) {
+      res.status(404).json({message: "Cannot find user"});
+    } else {
+      res.send({
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        prefix: user.prefix,
+        ownProducts: user.ownProducts,
+        image: user.image,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({message: error.message});
+  }
+};
+
 export const logout = async (req, res, next) => {
   // also use for collecting log in the future
   const cookie_name = req.body.cookie_name;

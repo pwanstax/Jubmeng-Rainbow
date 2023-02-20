@@ -63,14 +63,6 @@ const UserSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
-    rentedCount: {
-      type: Number,
-      default: 0,
-    },
-    rentedOutCount: {
-      type: Number,
-      default: 0,
-    },
     hash: String,
     salt: String,
   },
