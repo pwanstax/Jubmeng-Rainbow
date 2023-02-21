@@ -20,7 +20,6 @@ ClinicSchema.methods.setOpenHours = function (open_hours) {
 
   for (const day of new_open_hours) {
     for (let e of day.periods) {
-      console.log(e);
       const open_times = e.open_at.split(":");
       e.open_at = parseInt(open_times[0]) * 60 + parseInt(open_times[1]);
 

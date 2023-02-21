@@ -2,7 +2,11 @@ import User from "../models/user.model.js";
 import Clinic from "../models/clinic.model.js";
 import Service from "../models/service.model.js";
 import PetFriendly from "../models/petfriendly.model.js";
-import {filterByOpen} from "../utils/product.utils.js";
+import {
+  filterByOpen,
+  makeCondition,
+  sortProducts,
+} from "../utils/product.utils.js";
 export const createProduct = (req, res, next) => {
   const {
     owner,
@@ -86,6 +90,7 @@ const default_show_attrs = {
   status: 1,
   images: 1,
   location_description: 1,
+  location: 1,
   tags: 1,
   rating: 1,
   review_counts: 1,
@@ -93,19 +98,7 @@ const default_show_attrs = {
   open_hours: 1,
 };
 
-const buildReturnedData = (products) => {
-  for (const product of products) {
-    if (product.images && product.images.length) {
-      product.image = product.images[0];
-      delete product.images;
-    }
-  }
-
-  return products;
-};
-
 export const getEachProducts = async (req, res, next) => {
-  let condition = {};
   let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
   let Product;
   const type = req.params.type;
@@ -121,15 +114,22 @@ export const getEachProducts = async (req, res, next) => {
     });
   }
 
-  if (req.query.name) {
-    condition.$or = [
-      {name: {$regex: req.query.name, $options: "i"}},
-      {description: {$regex: req.query.name, $options: "i"}},
-    ];
+  let condition = {};
+  try {
+    condition = makeCondition(req.query.name, req.query.tags);
+  } catch (err) {
+    return res.status(500).json({message: err.message});
   }
 
   try {
-    const products = await filterByOpen(Product, condition, show_attrs);
+    let products = await filterByOpen(
+      Product,
+      condition,
+      show_attrs,
+      req.query.latitude,
+      req.query.longitude
+    );
+    products = sortProducts(products, req.query.sort);
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
@@ -137,27 +137,41 @@ export const getEachProducts = async (req, res, next) => {
 };
 
 export const getProducts = async (req, res, next) => {
-  let condition = {};
   let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
 
-  if (req.query.name) {
-    condition.$or = [
-      {name: {$regex: req.query.name, $options: "i"}},
-      {description: {$regex: req.query.name, $options: "i"}},
-    ];
-  }
+  let condition = {};
   try {
-    const clinics = await filterByOpen(Clinic, condition, show_attrs);
-    const services = await filterByOpen(Service, condition, show_attrs);
+    condition = makeCondition(req.query.name, req.query.tags);
+  } catch (err) {
+    return res.status(500).json({message: err.message});
+  }
+
+  try {
+    const clinics = await filterByOpen(
+      Clinic,
+      condition,
+      show_attrs,
+      req.query.latitude,
+      req.query.longitude
+    );
+    const services = await filterByOpen(
+      Service,
+      condition,
+      show_attrs,
+      req.query.latitude,
+      req.query.longitude
+    );
     show_attrs.place_type = 1;
     const petfriendlies = await filterByOpen(
       PetFriendly,
       condition,
-      show_attrs
+      show_attrs,
+      req.query.latitude,
+      req.query.longitude
     );
 
-    const products = clinics.concat(services, petfriendlies);
-
+    let products = clinics.concat(services, petfriendlies);
+    products = sortProducts(products, req.query.sort);
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
