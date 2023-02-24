@@ -76,7 +76,7 @@ export const setSeller = async (req, res, next) => {
 };
 
 export const addUserInfo = async (req, res, next) => {
-  const id = req.params.id;
+  const id = req.body.id;
   try {
     let user = await User.findById(id);
     if (user == null) {
@@ -109,7 +109,7 @@ export const addUserInfo = async (req, res, next) => {
 };
 
 export const getUserInfo = async (req, res, next) => {
-  const id = req.params.id;
+  const id = req.body.id;
   try {
     let user = await User.findById(id);
     if (user == null) {
