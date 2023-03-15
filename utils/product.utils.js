@@ -128,12 +128,14 @@ export const makeCondition = (req_name, req_petTags, req_serviceTags) => {
 };
 
 export const sortProducts = (products, req_sort) => {
-  if (req_sort == "distance") {
+  if (req_sort == "Closest location") {
     products.sort((a, b) => (a.distance < b.distance ? -1 : 1));
-  } else if (req_sort == "ascending rating") {
+  } else if (req_sort == "Lowest rating") {
     products.sort((a, b) => (a.rating < b.rating ? -1 : 1));
-  } else if (req_sort == "descending rating") {
+  } else if (req_sort == "Highest rating") {
     products.sort((a, b) => (a.rating > b.rating ? -1 : 1));
+  } else if (req_sort == "Highest reviews") {
+    products.sort((a, b) => (a.review_counts > b.review_counts ? -1 : 1));
   }
   return products;
 };
