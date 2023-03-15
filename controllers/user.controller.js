@@ -5,13 +5,15 @@ import {Strategy as LocalStrategy} from "passport-local";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import multer from "multer";
+import {Storage} from "@google-cloud/storage";
+import {uploadImage} from "../utils/gcs.utils.js";
 import dotenv from "dotenv";
 
 dotenv.config({path: ".env"});
 const secret = process.env.JWT_SECRET;
 
 export const createUser = (req, res, next) => {
-  console.log(req.body);
   const user = new User();
   user.username = req.body.user.username;
   user.email = req.body.user.email;
@@ -77,13 +79,17 @@ export const setSeller = async (req, res, next) => {
 
 export const addUserInfo = async (req, res, next) => {
   const id = req.body.id;
+  console.log(req.body.id);
   try {
     let user = await User.findById(id);
     if (user == null) {
       res.status(404).json({message: "Cannot find user"});
     } else {
+      const imageUrl = req.file
+        ? await uploadImage(req.file, process.env.GCS_PROFILE_BUCKET, id)
+        : null;
+      if (imageUrl != null) user.image = imageUrl;
       if (req.body.username != null) user.username = req.body.username;
-      if (req.body.image != null) user.image = req.body.image;
       if (req.body.ownProducts != null) user.ownProducts = req.body.ownProducts;
       if (req.body.isSeller != null) user.isSeller = req.body.isSeller;
       if (req.body.firstName != null) user.firstName = req.body.firstName;

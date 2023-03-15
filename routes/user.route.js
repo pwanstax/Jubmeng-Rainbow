@@ -13,6 +13,7 @@ import {
 } from "../controllers/user.controller.js";
 import {errorHandler} from "../middlewares/error-handler.middleware.js";
 import auth from "../middlewares/jwt.middleware.js";
+import {upload} from "../middlewares/image.middleware.js";
 
 const router = express.Router();
 
@@ -27,6 +28,6 @@ router.route("/user/check-login").get(auth.required, checkLogin); // check if us
 router
   .route("/user/info")
   .post(auth.required, getUserInfo)
-  .patch(auth.required, addUserInfo); // get user's info & (add and update user info)
+  .patch(auth.required, upload.single("image"), addUserInfo); // get user's info & (add and update user info)
 
 export default router;
