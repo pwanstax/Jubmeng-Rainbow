@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: "https://pic.onlinewebfonts.com/svg/img_264157.png",
+      default: "https://storage.cloud.google.com/jubmeng-profile/default.png",
     },
     ownProducts: {
       type: [String],

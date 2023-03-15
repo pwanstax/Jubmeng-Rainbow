@@ -41,3 +41,5 @@ node_modules
 .env
 
 .prettierrc
+
+profile-bucket-key.json
