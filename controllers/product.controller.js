@@ -21,7 +21,8 @@ export const createProduct = (req, res, next) => {
     location_description,
     latitude,
     longitude,
-    tags,
+    petTags,
+    serviceTags,
     images,
     license_id,
     open_hours,
@@ -56,7 +57,8 @@ export const createProduct = (req, res, next) => {
   if (location_description) product.location_description = location_description;
   if (latitude && longitude) product.setLocation(latitude, longitude);
   if (images) product.images = images;
-  if (tags) product.tags = tags;
+  if (petTags) product.petTags = petTags;
+  if (serviceTags) product.serviceTags = serviceTags;
   if (license_id) product.license_id = license_id;
   if (open_hours) product.setOpenHours(open_hours);
   if (rating) product.rating = rating;
@@ -80,33 +82,13 @@ export const createProduct = (req, res, next) => {
     });
 };
 
-const default_show_attrs = {
-  owner: 1,
-  name: 1,
-  province: 1,
-  amphure: 1,
-  tambon: 1,
-  location: 1,
-  status: 1,
-  images: 1,
-  location_description: 1,
-  location: 1,
-  tags: 1,
-  rating: 1,
-  review_counts: 1,
-  description: 1,
-  open_hours: 1,
-};
-
 export const getEachProducts = async (req, res, next) => {
-  let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
   let Product;
   const type = req.params.type;
   if (type == "clinic") Product = Clinic;
   else if (type == "service") Product = Service;
   else if (type == "petfriendly") {
     Product = PetFriendly;
-    show_attrs.place_type = 1;
   } else {
     return res.status(500).json({
       message:
@@ -116,7 +98,11 @@ export const getEachProducts = async (req, res, next) => {
 
   let condition = {};
   try {
-    condition = makeCondition(req.query.name, req.query.tags);
+    condition = makeCondition(
+      req.query.name,
+      req.query.petTags,
+      req.query.serviceTags
+    );
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
@@ -125,7 +111,6 @@ export const getEachProducts = async (req, res, next) => {
     let products = await filterByOpen(
       Product,
       condition,
-      show_attrs,
       req.query.latitude,
       req.query.longitude
     );
@@ -137,11 +122,13 @@ export const getEachProducts = async (req, res, next) => {
 };
 
 export const getProducts = async (req, res, next) => {
-  let show_attrs = JSON.parse(JSON.stringify(default_show_attrs));
-
   let condition = {};
   try {
-    condition = makeCondition(req.query.name, req.query.tags);
+    condition = makeCondition(
+      req.query.name,
+      req.query.petTags,
+      req.query.serviceTags
+    );
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
@@ -150,22 +137,18 @@ export const getProducts = async (req, res, next) => {
     const clinics = await filterByOpen(
       Clinic,
       condition,
-      show_attrs,
       req.query.latitude,
       req.query.longitude
     );
     const services = await filterByOpen(
       Service,
       condition,
-      show_attrs,
       req.query.latitude,
       req.query.longitude
     );
-    show_attrs.place_type = 1;
     const petfriendlies = await filterByOpen(
       PetFriendly,
       condition,
-      show_attrs,
       req.query.latitude,
       req.query.longitude
     );

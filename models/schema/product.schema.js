@@ -62,7 +62,11 @@ const Product = {
     },
     //required: [true, "can't be blank"],
   },
-  tags: {
+  petTags: {
+    type: [String], //[long,lat]
+    required: [true, "can't be blank"],
+  },
+  serviceTags: {
     type: [String], //[long,lat]
     required: [true, "can't be blank"],
   },

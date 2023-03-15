@@ -40,5 +40,24 @@ ClinicSchema.methods.toAuthJSON = function () {
   };
 };
 
+ClinicSchema.methods.toProductJSON = function () {
+  return {
+    owner: this.owner,
+    name: this.name,
+    province: this.province,
+    amphure: this.amphure,
+    tambon: this.tambon,
+    status: this.status,
+    image: this.images[0],
+    location_description: this.location_description,
+    location: this.location,
+    tags: this.petTags.concat(this.serviceTags),
+    rating: this.rating,
+    review_counts: this.review_counts,
+    description: this.description || "",
+    open_hours: this.open_hours,
+  };
+};
+
 const Clinic = mongoose.model("Clinic", ClinicSchema);
 export default Clinic;

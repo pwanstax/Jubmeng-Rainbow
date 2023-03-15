@@ -8,7 +8,7 @@ const PetFriendlySchema = new mongoose.Schema(
       type: String,
     },
   },
-  { timestamps: true }
+  {timestamps: true}
 );
 
 PetFriendlySchema.methods.setLocation = function (latitude, longitude) {
@@ -27,5 +27,24 @@ PetFriendlySchema.methods.toAuthJSON = function () {
   };
 };
 
+PetFriendlySchema.methods.toProductJSON = function () {
+  return {
+    owner: this.owner,
+    name: this.name,
+    province: this.province,
+    amphure: this.amphure,
+    tambon: this.tambon,
+    status: this.status,
+    image: this.images[0],
+    location_description: this.location_description,
+    location: this.location,
+    tags: this.petTags.concat(this.serviceTags),
+    rating: this.rating,
+    review_counts: this.review_counts,
+    description: this.description || "",
+    open_hours: this.open_hours,
+    place_type: this.place_type || "",
+  };
+};
 const PetFriendly = mongoose.model("PetFriendly", PetFriendlySchema);
 export default PetFriendly;
