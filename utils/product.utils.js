@@ -61,16 +61,16 @@ export const filterByOpen = async (Product, condition, req_lat, req_lng) => {
   };
   let open_products = await Product.find(open_condition);
   open_products = open_products.map((e) => e.toProductJSON());
-  for (const product of open_products) product.open_status = "open";
+  for (const product of open_products) product.open_status = "Open";
 
   let close_products = await Product.find(close_condition);
   close_products = close_products.map((e) => e.toProductJSON());
-  for (const product of close_products) product.open_status = "closed";
+  for (const product of close_products) product.open_status = "Closed";
 
   let manuel_close_products = await Product.find(manuel_close_condition);
   manuel_close_products = manuel_close_products.map((e) => e.toProductJSON());
   for (const product of manuel_close_products)
-    product.open_status = "temporary closed";
+    product.open_status = "Temporary Closed";
 
   const products = open_products.concat(close_products, manuel_close_products);
 

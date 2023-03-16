@@ -175,6 +175,7 @@ export const mapServiceTagIcon = (tags) => {
       name: tag,
     });
   }
+  return ret;
 };
 
 export const checkOpenOrClose = (open_hours, manual_close) => {
@@ -182,14 +183,19 @@ export const checkOpenOrClose = (open_hours, manual_close) => {
   const now = moment().tz("Asia/Bangkok");
   const now_day = days[now.isoWeekday() - 1];
   const now_time = now.hours() * 60 + now.minutes();
-  if (manual_close) return "temporary closed";
+  if (manual_close) return ["Temporary Closed", ""];
   for (const e of open_hours) {
     if (e.day != now_day) continue;
     for (const period of e.periods) {
       if (period.open_at <= now_time && period.close_at >= now_time) {
-        return "open";
+        return [
+          "Open",
+          ("0" + Math.floor(period.close_at / 60)).slice(-2) +
+            ":" +
+            ("0" + (period.close_at % 60)).slice(-2),
+        ];
       }
     }
   }
-  return "closed";
+  return ["Closed", ""];
 };

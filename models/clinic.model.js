@@ -61,6 +61,7 @@ ClinicSchema.methods.toProductJSON = function () {
     review_counts: this.review_counts,
     description: this.description || "",
     open_hours: formatOpenHours(this.open_hours),
+    todayCloseAt: checkOpenOrClose(this.open_hours, this.manual_close)[1],
   };
 };
 
@@ -83,7 +84,8 @@ ClinicSchema.methods.toProductDetailJSON = function () {
     description: this.description || "",
     open_hours: formatOpenHours(this.open_hours),
     prices: this.prices,
-    open_status: checkOpenOrClose(this.open_hours, this.manual_close),
+    open_status: checkOpenOrClose(this.open_hours, this.manual_close)[0],
+    todayCloseAt: checkOpenOrClose(this.open_hours, this.manual_close)[1],
   };
 };
 
