@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 import Product from "./schema/product.schema.js";
-
+import {
+  formatOpenHours,
+  checkOpenOrClose,
+  mapServiceTagIcon,
+} from "./schema/product.schema.js";
 const ClinicSchema = new mongoose.Schema(
   {
     ...Product,
@@ -36,12 +40,13 @@ ClinicSchema.methods.toAuthJSON = function () {
     name: this.name,
     status: this.status,
     province: this.province,
-    open_hours: this.open_hours,
+    open_hours: formatOpenHours(this.open_hours),
   };
 };
 
 ClinicSchema.methods.toProductJSON = function () {
   return {
+    id: this._id,
     owner: this.owner,
     name: this.name,
     province: this.province,
@@ -55,7 +60,30 @@ ClinicSchema.methods.toProductJSON = function () {
     rating: this.rating,
     review_counts: this.review_counts,
     description: this.description || "",
-    open_hours: this.open_hours,
+    open_hours: formatOpenHours(this.open_hours),
+  };
+};
+
+ClinicSchema.methods.toProductDetailJSON = function () {
+  return {
+    owner: this.owner,
+    name: this.name,
+    phones: this.phones,
+    social_networks: this.social_networks,
+    province: this.province,
+    amphure: this.amphure,
+    tambon: this.tambon,
+    status: this.status,
+    images: this.images,
+    location_description: this.location_description,
+    location: this.location,
+    tags: mapServiceTagIcon(this.serviceTags),
+    rating: this.rating,
+    review_counts: this.review_counts,
+    description: this.description || "",
+    open_hours: formatOpenHours(this.open_hours),
+    prices: this.prices,
+    open_status: checkOpenOrClose(this.open_hours, this.manual_close),
   };
 };
 
