@@ -175,8 +175,8 @@ export const getProductInfo = async (req, res, next) => {
     });
   }
   try {
-    const product = await Product.findById(id).lean();
-    return res.json(product);
+    const product = await Product.findById(id);
+    return res.json(product.toProductDetailJSON());
   } catch (err) {
     return res.status(500).json({message: err.message});
   }

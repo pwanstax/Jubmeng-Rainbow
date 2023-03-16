@@ -1,3 +1,5 @@
+import moment from "moment-timezone";
+
 const Product = {
   owner: {
     type: String,
@@ -140,3 +142,60 @@ const Product = {
 };
 
 export default Product;
+
+export const formatOpenHours = (open_hours) => {
+  let formatOpenHours = [];
+  for (const e of open_hours) {
+    let periods = [];
+    for (const period of e.periods) {
+      periods.push({
+        open_at:
+          ("0" + Math.floor(period.open_at / 60)).slice(-2) +
+          ":" +
+          ("0" + (period.open_at % 60)).slice(-2),
+        close_at:
+          ("0" + Math.floor(period.close_at / 60)).slice(-2) +
+          ":" +
+          ("0" + (period.close_at % 60)).slice(-2),
+      });
+    }
+    formatOpenHours.push({
+      day: e.day,
+      periods: periods,
+    });
+  }
+  return formatOpenHours;
+};
+
+export const mapServiceTagIcon = (tags) => {
+  let ret = [];
+  for (const tag of tags) {
+    ret.push({
+      class: "fa-solid fa-syringe", //must change to be real icon
+      name: tag,
+    });
+  }
+  return ret;
+};
+
+export const checkOpenOrClose = (open_hours, manual_close) => {
+  const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const now = moment().tz("Asia/Bangkok");
+  const now_day = days[now.isoWeekday() - 1];
+  const now_time = now.hours() * 60 + now.minutes();
+  if (manual_close) return ["Temporary Closed", ""];
+  for (const e of open_hours) {
+    if (e.day != now_day) continue;
+    for (const period of e.periods) {
+      if (period.open_at <= now_time && period.close_at >= now_time) {
+        return [
+          "Open",
+          ("0" + Math.floor(period.close_at / 60)).slice(-2) +
+            ":" +
+            ("0" + (period.close_at % 60)).slice(-2),
+        ];
+      }
+    }
+  }
+  return ["Closed", ""];
+};
