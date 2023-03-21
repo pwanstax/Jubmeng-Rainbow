@@ -40,7 +40,7 @@ ServiceSchema.methods.toProductJSON = function () {
     image: this.images[0],
     location_description: this.location_description,
     location: this.location,
-    tags: this.petTags.concat(this.serviceTags),
+    tags: mapServiceTagIcon(this.serviceTags),
     rating: this.rating,
     review_counts: this.review_counts,
     description: this.description || "",
