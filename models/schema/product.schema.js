@@ -107,7 +107,7 @@ const Product = {
     ],
     validate: (v) => Array.isArray(v) && v.length > 0,
   },
-  manualCose: {
+  manualClose: {
     type: Boolean,
     required: [true, "can't be blank"],
     default: false,
@@ -178,12 +178,12 @@ export const mapServiceTagIcon = (tags) => {
   return ret;
 };
 
-export const checkOpenOrClose = (openHours, manualCose) => {
+export const checkOpenOrClose = (openHours, manualClose) => {
   const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const now = moment().tz("Asia/Bangkok");
   const nowDay = days[now.isoWeekday() - 1];
   const nowTime = now.hours() * 60 + now.minutes();
-  if (manualCose) return ["Temporary Closed", ""];
+  if (manualClose) return ["Temporary Closed", ""];
   for (const e of openHours) {
     if (e.day != nowDay) continue;
     for (const period of e.periods) {

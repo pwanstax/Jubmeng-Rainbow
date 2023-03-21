@@ -24,14 +24,14 @@ export const filterByOpen = async (Product, condition, reqLat, reqLng) => {
               },
             },
           },
-          {manualCose: false},
+          {manualClose: false},
         ],
       },
     ],
   };
 
   const manualcloseCondition = {
-    $and: [condition, {manualCose: true}],
+    $and: [condition, {manualClose: true}],
   };
 
   const closeCondition = {
@@ -54,7 +54,7 @@ export const filterByOpen = async (Product, condition, reqLat, reqLng) => {
               },
             },
           },
-          {manualCose: false},
+          {manualClose: false},
         ],
       },
     ],

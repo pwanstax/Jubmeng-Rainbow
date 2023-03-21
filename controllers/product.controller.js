@@ -30,7 +30,7 @@ export const createProduct = (req, res, next) => {
     rating,
     reviewCounts,
     prices,
-    manualCose,
+    manualClose,
   } = req.body.product;
 
   const type = req.params.type;
@@ -65,7 +65,7 @@ export const createProduct = (req, res, next) => {
   if (reviewCounts) product.reviewCounts = reviewCounts;
   if (prices) product.prices = prices;
   if (type == "petfriendly" && placeType) product.placeType = placeType;
-  if (manualCose) product.manualCose = manualCose;
+  if (manualClose) product.manualClose = manualClose;
 
   product
     .save()
