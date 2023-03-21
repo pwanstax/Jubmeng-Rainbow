@@ -95,10 +95,17 @@ export const filterByOpen = async (Product, condition, req_lat, req_lng) => {
 export const makeCondition = (req_name, req_petTags, req_serviceTags) => {
   let condition = {};
   let name_condition = {};
+
   if (req_name) {
+    let x = req_name.split(/\b\s+/);
+    const regex = x.map(function (e) {
+      return new RegExp(e, "i");
+    });
     name_condition.$or = [
       {name: {$regex: req_name, $options: "i"}},
       {description: {$regex: req_name, $options: "i"}},
+      {petTags: {$in: regex}},
+      {serviceTags: {$in: regex}},
     ];
   }
   let tags_condition = {};
