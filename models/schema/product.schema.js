@@ -8,7 +8,7 @@ const Product = {
     match: [/^[a-zA-Z0-9]+$/, "is invalid"],
     index: true,
   },
-  license_id: {
+  licenseID: {
     type: String,
     required: [true, "can't be blank"],
     unique: true,
@@ -21,8 +21,8 @@ const Product = {
   phones: {
     type: [String],
   },
-  social_networks: {
-    line_id: String,
+  socialNetworks: {
+    lineID: String,
     facebook: String,
     instagram: String,
     twitter: String,
@@ -46,7 +46,7 @@ const Product = {
     type: String,
     required: [true, "can't be blank"],
   },
-  location_description: {
+  locationDescription: {
     type: String,
     required: [true, "can't be blank"],
   },
@@ -76,7 +76,7 @@ const Product = {
     type: [String],
     validate: (v) => Array.isArray(v) && v.length > 0,
   },
-  open_hours: {
+  openHours: {
     type: [
       {
         day: {
@@ -87,13 +87,13 @@ const Product = {
         periods: {
           type: [
             {
-              open_at: {
+              openAt: {
                 type: Number,
                 min: 0,
                 max: 1440,
                 required: [true, "can't be blank"],
               },
-              close_at: {
+              closeAt: {
                 type: Number,
                 min: 0,
                 max: 1440,
@@ -107,7 +107,7 @@ const Product = {
     ],
     validate: (v) => Array.isArray(v) && v.length > 0,
   },
-  manual_close: {
+  manualCose: {
     type: Boolean,
     required: [true, "can't be blank"],
     default: false,
@@ -119,7 +119,7 @@ const Product = {
     required: [true, "can't be blank"],
     default: 5,
   },
-  review_counts: {
+  reviewCounts: {
     type: Number,
     min: 0,
     required: [true, "can't be blank"],
@@ -143,20 +143,20 @@ const Product = {
 
 export default Product;
 
-export const formatOpenHours = (open_hours) => {
+export const formatOpenHours = (openHours) => {
   let formatOpenHours = [];
-  for (const e of open_hours) {
+  for (const e of openHours) {
     let periods = [];
     for (const period of e.periods) {
       periods.push({
-        open_at:
-          ("0" + Math.floor(period.open_at / 60)).slice(-2) +
+        openAt:
+          ("0" + Math.floor(period.openAt / 60)).slice(-2) +
           ":" +
-          ("0" + (period.open_at % 60)).slice(-2),
-        close_at:
-          ("0" + Math.floor(period.close_at / 60)).slice(-2) +
+          ("0" + (period.openAt % 60)).slice(-2),
+        closeAt:
+          ("0" + Math.floor(period.closeAt / 60)).slice(-2) +
           ":" +
-          ("0" + (period.close_at % 60)).slice(-2),
+          ("0" + (period.closeAt % 60)).slice(-2),
       });
     }
     formatOpenHours.push({
@@ -178,21 +178,21 @@ export const mapServiceTagIcon = (tags) => {
   return ret;
 };
 
-export const checkOpenOrClose = (open_hours, manual_close) => {
+export const checkOpenOrClose = (openHours, manualCose) => {
   const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const now = moment().tz("Asia/Bangkok");
-  const now_day = days[now.isoWeekday() - 1];
-  const now_time = now.hours() * 60 + now.minutes();
-  if (manual_close) return ["Temporary Closed", ""];
-  for (const e of open_hours) {
-    if (e.day != now_day) continue;
+  const nowDay = days[now.isoWeekday() - 1];
+  const nowTime = now.hours() * 60 + now.minutes();
+  if (manualCose) return ["Temporary Closed", ""];
+  for (const e of openHours) {
+    if (e.day != nowDay) continue;
     for (const period of e.periods) {
-      if (period.open_at <= now_time && period.close_at >= now_time) {
+      if (period.openAt <= nowTime && period.closeAt >= nowTime) {
         return [
           "Open",
-          ("0" + Math.floor(period.close_at / 60)).slice(-2) +
+          ("0" + Math.floor(period.closeAt / 60)).slice(-2) +
             ":" +
-            ("0" + (period.close_at % 60)).slice(-2),
+            ("0" + (period.closeAt % 60)).slice(-2),
         ];
       }
     }

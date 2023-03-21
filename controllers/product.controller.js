@@ -12,25 +12,25 @@ export const createProduct = (req, res, next) => {
     owner,
     name,
     phones,
-    social_networks,
+    socialNetworks,
     status,
     description,
     province,
     amphure,
     tambon,
-    location_description,
+    locationDescription,
     latitude,
     longitude,
     petTags,
     serviceTags,
     images,
-    license_id,
-    open_hours,
-    place_type,
+    licenseID,
+    openHours,
+    placeType,
     rating,
-    review_counts,
+    reviewCounts,
     prices,
-    manual_close,
+    manualCose,
   } = req.body.product;
 
   const type = req.params.type;
@@ -48,24 +48,24 @@ export const createProduct = (req, res, next) => {
   if (owner) product.owner = owner;
   if (name) product.name = name;
   if (phones) product.phones = phones;
-  if (social_networks) product.social_networks = social_networks;
+  if (socialNetworks) product.socialNetworks = socialNetworks;
   if (status) product.status = status;
   if (description) product.description = description;
   if (province) product.province = province;
   if (amphure) product.amphure = amphure;
   if (tambon) product.tambon = tambon;
-  if (location_description) product.location_description = location_description;
+  if (locationDescription) product.locationDescription = locationDescription;
   if (latitude && longitude) product.setLocation(latitude, longitude);
   if (images) product.images = images;
   if (petTags) product.petTags = petTags;
   if (serviceTags) product.serviceTags = serviceTags;
-  if (license_id) product.license_id = license_id;
-  if (open_hours) product.setOpenHours(open_hours);
+  if (licenseID) product.licenseID = licenseID;
+  if (openHours) product.setOpenHours(openHours);
   if (rating) product.rating = rating;
-  if (review_counts) product.review_counts = review_counts;
+  if (reviewCounts) product.reviewCounts = reviewCounts;
   if (prices) product.prices = prices;
-  if (type == "petfriendly" && place_type) product.place_type = place_type;
-  if (manual_close) product.manual_close = manual_close;
+  if (type == "petfriendly" && placeType) product.placeType = placeType;
+  if (manualCose) product.manualCose = manualCose;
 
   product
     .save()
@@ -75,7 +75,7 @@ export const createProduct = (req, res, next) => {
     .catch(function (error) {
       if (error.code === 11000) {
         return res.status(400).send({
-          error: "license_id already exists",
+          error: "licenseID already exists",
         });
       }
       next(error);

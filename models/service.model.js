@@ -19,15 +19,31 @@ ServiceSchema.methods.setLocation = function (latitude, longitude) {
   };
 };
 
+ServiceSchema.methods.setOpenHours = function (openHours) {
+  let newOpenHours = openHours;
+
+  for (const day of newOpenHours) {
+    for (let e of day.periods) {
+      const openTimes = e.openAt.split(":");
+      e.openAt = parseInt(openTimes[0]) * 60 + parseInt(openTimes[1]);
+
+      const closeTimes = e.closeAt.split(":");
+      e.closeAt = parseInt(closeTimes[0]) * 60 + parseInt(closeTimes[1]);
+    }
+  }
+  this.openHours = newOpenHours;
+};
+
 ServiceSchema.methods.toAuthJSON = function () {
   return {
     owner: this.owner,
     name: this.name,
     status: this.status,
     province: this.province,
-    open_hours: formatOpenHours(this.open_hours),
+    openHours: formatOpenHours(this.openHours),
   };
 };
+
 ServiceSchema.methods.toProductJSON = function () {
   return {
     id: this._id,
@@ -38,14 +54,14 @@ ServiceSchema.methods.toProductJSON = function () {
     tambon: this.tambon,
     status: this.status,
     image: this.images[0],
-    location_description: this.location_description,
+    locationDescription: this.locationDescription,
     location: this.location,
     tags: mapServiceTagIcon(this.serviceTags),
     rating: this.rating,
-    review_counts: this.review_counts,
+    reviewCounts: this.reviewCounts,
     description: this.description || "",
-    open_hours: formatOpenHours(this.open_hours),
-    todayCloseAt: checkOpenOrClose(this.open_hours, this.manual_close)[1],
+    openHours: formatOpenHours(this.openHours),
+    todayCloseAt: checkOpenOrClose(this.openHours, this.manualCose)[1],
   };
 };
 
@@ -54,22 +70,22 @@ ServiceSchema.methods.toProductDetailJSON = function () {
     owner: this.owner,
     name: this.name,
     phones: this.phones,
-    social_networks: this.social_networks,
+    socialNetworks: this.socialNetworks,
     province: this.province,
     amphure: this.amphure,
     tambon: this.tambon,
     status: this.status,
     images: this.images,
-    location_description: this.location_description,
+    locationDescription: this.locationDescription,
     location: this.location,
     tags: mapServiceTagIcon(this.serviceTags),
     rating: this.rating,
-    review_counts: this.review_counts,
+    reviewCounts: this.reviewCounts,
     description: this.description || "",
-    open_hours: formatOpenHours(this.open_hours),
+    openHours: formatOpenHours(this.openHours),
     prices: this.prices,
-    open_status: checkOpenOrClose(this.open_hours, this.manual_close)[0],
-    todayCloseAt: checkOpenOrClose(this.open_hours, this.manual_close)[1],
+    openStatus: checkOpenOrClose(this.openHours, this.manualCose)[0],
+    todayCloseAt: checkOpenOrClose(this.openHours, this.manualCose)[1],
   };
 };
 

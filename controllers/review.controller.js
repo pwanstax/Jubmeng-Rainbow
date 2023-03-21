@@ -41,14 +41,14 @@ export const createReview = async (req, res, next) => {
       error: "Product not found",
     });
   }
-  if (product.review_counts > 0) {
+  if (product.reviewCounts > 0) {
     product.rating =
-      (product.rating * product.review_counts + rating) /
-      (product.review_counts + 1);
+      (product.rating * product.reviewCounts + rating) /
+      (product.reviewCounts + 1);
   } else {
     product.rating = rating;
   }
-  product.review_counts = product.review_counts + 1;
+  product.reviewCounts = product.reviewCounts + 1;
   try {
     await review.save();
     await product.save();
@@ -56,23 +56,23 @@ export const createReview = async (req, res, next) => {
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).send({
-        error: "license_id already exists",
+        error: "licenseID already exists",
       });
     }
     next(error);
   }
 };
 
-export const sortReviews = (reviews, req_sort) => {
-  if (req_sort == "lowest_rating") {
+export const sortReviews = (reviews, reqSort) => {
+  if (reqSort == "lowest_rating") {
     reviews.sort((a, b) => (a.rating < b.rating ? -1 : 1));
-  } else if (req_sort == "highest_rating") {
+  } else if (reqSort == "highest_rating") {
     reviews.sort((a, b) => (a.rating > b.rating ? -1 : 1));
-  } else if (req_sort == "oldest") {
+  } else if (reqSort == "oldest") {
     reviews.sort((a, b) =>
       new Date(a.createdAtDateTime) < new Date(b.createdAtDateTime) ? -1 : 1
     );
-  } else if (req_sort == "newest") {
+  } else if (reqSort == "newest") {
     reviews.sort((a, b) =>
       new Date(a.createdAtDateTime) > new Date(b.createdAtDateTime) ? -1 : 1
     );
