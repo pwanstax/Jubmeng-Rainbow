@@ -50,6 +50,7 @@ ReviewSchema.methods.toAuthJSON = function () {
   };
 };
 ReviewSchema.methods.toProductDetailJSON = function () {
+  const options = {day: "numeric", month: "long", year: "numeric"};
   return {
     reviewer: this.reviewerID.username,
     reviewerImg: this.reviewerID.image,
@@ -59,6 +60,8 @@ ReviewSchema.methods.toProductDetailJSON = function () {
     petFriendlyID: this.petFriendlyID || "",
     comment: this.comment,
     rating: this.rating,
+    createdAtDateTime: this.createdAt,
+    createdAt: this.createdAt.toLocaleDateString("en-US", options),
   };
 };
 const Review = mongoose.model("Review", ReviewSchema);

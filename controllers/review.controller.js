@@ -63,6 +63,23 @@ export const createReview = async (req, res, next) => {
   }
 };
 
+export const sortReviews = (reviews, req_sort) => {
+  if (req_sort == "lowest_rating") {
+    reviews.sort((a, b) => (a.rating < b.rating ? -1 : 1));
+  } else if (req_sort == "highest_rating") {
+    reviews.sort((a, b) => (a.rating > b.rating ? -1 : 1));
+  } else if (req_sort == "oldest") {
+    reviews.sort((a, b) =>
+      new Date(a.createdAtDateTime) < new Date(b.createdAtDateTime) ? -1 : 1
+    );
+  } else if (req_sort == "newest") {
+    reviews.sort((a, b) =>
+      new Date(a.createdAtDateTime) > new Date(b.createdAtDateTime) ? -1 : 1
+    );
+  }
+  return reviews;
+};
+
 export const getReviews = async (req, res, next) => {
   let condition = {};
   const type = req.params.type;
@@ -85,7 +102,8 @@ export const getReviews = async (req, res, next) => {
       return b.rating - a.rating;
     });
     const sendReviews = reviews.map((e) => e.toProductDetailJSON());
-    return res.json({reviews: sendReviews});
+    const sortedReviews = sortReviews(sendReviews, req.query.sort);
+    return res.json({reviews: sortedReviews});
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
