@@ -19,19 +19,19 @@ ClinicSchema.methods.setLocation = function (latitude, longitude) {
   };
 };
 
-ClinicSchema.methods.setOpenHours = function (open_hours) {
-  let new_open_hours = open_hours;
+ClinicSchema.methods.setOpenHours = function (openHours) {
+  let newOpenHours = openHours;
 
-  for (const day of new_open_hours) {
+  for (const day of newOpenHours) {
     for (let e of day.periods) {
-      const open_times = e.open_at.split(":");
-      e.open_at = parseInt(open_times[0]) * 60 + parseInt(open_times[1]);
+      const openTimes = e.openAt.split(":");
+      e.openAt = parseInt(openTimes[0]) * 60 + parseInt(openTimes[1]);
 
-      const close_times = e.close_at.split(":");
-      e.close_at = parseInt(close_times[0]) * 60 + parseInt(close_times[1]);
+      const closeTimes = e.closeAt.split(":");
+      e.closeAt = parseInt(closeTimes[0]) * 60 + parseInt(closeTimes[1]);
     }
   }
-  this.open_hours = new_open_hours;
+  this.openHours = newOpenHours;
 };
 
 ClinicSchema.methods.toAuthJSON = function () {
@@ -40,7 +40,7 @@ ClinicSchema.methods.toAuthJSON = function () {
     name: this.name,
     status: this.status,
     province: this.province,
-    open_hours: formatOpenHours(this.open_hours),
+    openHours: formatOpenHours(this.openHours),
   };
 };
 
@@ -54,14 +54,14 @@ ClinicSchema.methods.toProductJSON = function () {
     tambon: this.tambon,
     status: this.status,
     image: this.images[0],
-    location_description: this.location_description,
+    locationDescription: this.locationDescription,
     location: this.location,
     tags: mapServiceTagIcon(this.serviceTags),
     rating: this.rating,
-    review_counts: this.review_counts,
+    reviewCounts: this.reviewCounts,
     description: this.description || "",
-    open_hours: formatOpenHours(this.open_hours),
-    todayCloseAt: checkOpenOrClose(this.open_hours, this.manual_close)[1],
+    openHours: formatOpenHours(this.openHours),
+    todayCloseAt: checkOpenOrClose(this.openHours, this.manualClose)[1],
   };
 };
 
@@ -70,22 +70,22 @@ ClinicSchema.methods.toProductDetailJSON = function () {
     owner: this.owner,
     name: this.name,
     phones: this.phones,
-    social_networks: this.social_networks,
+    socialNetworks: this.socialNetworks,
     province: this.province,
     amphure: this.amphure,
     tambon: this.tambon,
     status: this.status,
     images: this.images,
-    location_description: this.location_description,
+    locationDescription: this.locationDescription,
     location: this.location,
     tags: mapServiceTagIcon(this.serviceTags),
     rating: this.rating,
-    review_counts: this.review_counts,
+    reviewCounts: this.reviewCounts,
     description: this.description || "",
-    open_hours: formatOpenHours(this.open_hours),
+    openHours: formatOpenHours(this.openHours),
     prices: this.prices,
-    open_status: checkOpenOrClose(this.open_hours, this.manual_close)[0],
-    todayCloseAt: checkOpenOrClose(this.open_hours, this.manual_close)[1],
+    openStatus: checkOpenOrClose(this.openHours, this.manualClose)[0],
+    todayCloseAt: checkOpenOrClose(this.openHours, this.manualClose)[1],
   };
 };
 
