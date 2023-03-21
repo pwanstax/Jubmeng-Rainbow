@@ -1,12 +1,12 @@
 import moment from "moment-timezone";
 import dotenv from "dotenv";
 
-export const filterByOpen = async (Product, condition, req_lat, req_lng) => {
+export const filterByOpen = async (Product, condition, reqLat, reqLng) => {
   const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const now = moment().tz("Asia/Bangkok");
   const nowDay = days[now.isoWeekday() - 1];
   const nowTime = now.hours() * 60 + now.minutes();
-  const open_condition = {
+  const openCondition = {
     $and: [
       condition,
       {
@@ -30,11 +30,11 @@ export const filterByOpen = async (Product, condition, req_lat, req_lng) => {
     ],
   };
 
-  const manuel_close_condition = {
+  const manualcloseCondition = {
     $and: [condition, {manualCose: true}],
   };
 
-  const close_condition = {
+  const closeCondition = {
     $and: [
       condition,
       {
@@ -59,32 +59,32 @@ export const filterByOpen = async (Product, condition, req_lat, req_lng) => {
       },
     ],
   };
-  let open_products = await Product.find(open_condition);
-  open_products = open_products.map((e) => e.toProductJSON());
-  for (const product of open_products) product.openStatus = "Open";
+  let openProducts = await Product.find(openCondition);
+  openProducts = openProducts.map((e) => e.toProductJSON());
+  for (const product of openProducts) product.openStatus = "Open";
 
-  let close_products = await Product.find(close_condition);
-  close_products = close_products.map((e) => e.toProductJSON());
-  for (const product of close_products) product.openStatus = "Closed";
+  let closeProducts = await Product.find(closeCondition);
+  closeProducts = closeProducts.map((e) => e.toProductJSON());
+  for (const product of closeProducts) product.openStatus = "Closed";
 
-  let manuel_close_products = await Product.find(manuel_close_condition);
-  manuel_close_products = manuel_close_products.map((e) => e.toProductJSON());
-  for (const product of manuel_close_products)
+  let manualCloseProducts = await Product.find(manualcloseCondition);
+  manualCloseProducts = manualCloseProducts.map((e) => e.toProductJSON());
+  for (const product of manualCloseProducts)
     product.openStatus = "Temporary Closed";
 
-  const products = open_products.concat(close_products, manuel_close_products);
+  const products = openProducts.concat(closeProducts, manualCloseProducts);
 
   for (const product of products) {
     // if (product.images && product.images.length) {
     //   product.image = product.images[0];
     //   delete product.images;
     // }
-    if (req_lat && req_lng) {
+    if (reqLat && reqLng) {
       product.distance = distance(
         product.location.coordinates[1],
         product.location.coordinates[0],
-        req_lat,
-        req_lng
+        reqLat,
+        reqLng
       );
     }
     delete product.location;
@@ -92,45 +92,45 @@ export const filterByOpen = async (Product, condition, req_lat, req_lng) => {
   return products;
 };
 
-export const makeCondition = (req_name, req_petTags, req_serviceTags) => {
+export const makeCondition = (reqName, reqPetTags, reqServiceTags) => {
   let condition = {};
-  let name_condition = {};
+  let nameCondition = {};
 
-  if (req_name) {
-    let x = req_name.split(/\b\s+/);
+  if (reqName) {
+    let x = reqName.split(/\b\s+/);
     const regex = x.map(function (e) {
       return new RegExp(e, "i");
     });
-    name_condition.$or = [
-      {name: {$regex: req_name, $options: "i"}},
-      {description: {$regex: req_name, $options: "i"}},
+    nameCondition.$or = [
+      {name: {$regex: reqName, $options: "i"}},
+      {description: {$regex: reqName, $options: "i"}},
       {petTags: {$in: regex}},
       {serviceTags: {$in: regex}},
     ];
   }
-  let tags_condition = {};
-  let petTags_condition = {};
-  let serviceTags_condition = {};
-  if (req_petTags) {
-    const encoded_petTags = req_petTags;
-    const petTags = JSON.parse(decodeURIComponent(encoded_petTags));
+  let tagsCondition = {};
+  let petTagsCondition = {};
+  let serviceTagsCondition = {};
+  if (reqPetTags) {
+    const encodedPetTags = reqPetTags;
+    const petTags = JSON.parse(decodeURIComponent(encodedPetTags));
     if (petTags.length) {
-      petTags_condition.petTags = {
+      petTagsCondition.petTags = {
         $all: petTags,
       };
     }
   }
-  if (req_serviceTags) {
-    const encoded_serviceTags = req_serviceTags;
-    const serviceTags = JSON.parse(decodeURIComponent(encoded_serviceTags));
+  if (reqServiceTags) {
+    const encodedServiceTags = reqServiceTags;
+    const serviceTags = JSON.parse(decodeURIComponent(encodedServiceTags));
     if (serviceTags.length) {
-      tags_condition.serviceTags = {
+      tagsCondition.serviceTags = {
         $all: serviceTags,
       };
     }
   }
-  tags_condition.$and = [serviceTags_condition, petTags_condition];
-  condition.$and = [name_condition, tags_condition];
+  tagsCondition.$and = [serviceTagsCondition, petTagsCondition];
+  condition.$and = [nameCondition, tagsCondition];
   return condition;
 };
 
