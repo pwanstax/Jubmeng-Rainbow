@@ -185,17 +185,21 @@ export const getProductInfo = async (req, res, next) => {
 
 export const getMyProducts = async (req, res, next) => {
   const username = req.params.username;
-  let myProducts = [];
   try {
     const condition = makeCondition(null, null, null, {owner: username});
-    const petFriendly = await PetFriendly.find(condition);
-    const clinic = await Clinic.find(condition);
-    const service = await Service.find(condition);
+    let petFriendly = await PetFriendly.find(condition);
+    let clinic = await Clinic.find(condition);
+    let service = await Service.find(condition);
 
-    myProducts = [...petFriendly, ...clinic, ...service];
-    myProducts = myProducts.map((e) => e.toProductJSON());
+    const myProducts = [...petFriendly, ...clinic, ...service];
+    const withType = myProducts.map((e) => {
+      const product = e.toProductJSON();
+      product.type = e.constructor.modelName.toLowerCase();
+      return product;
+    });
+
     res.send({
-      myProducts,
+      myProducts: withType,
     });
   } catch (error) {
     res.status(500).json({message: error.message});
