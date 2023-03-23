@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import multer from "multer";
 import {Storage} from "@google-cloud/storage";
-import {uploadImage} from "../utils/gcs.utils.js";
+import {uploadImage, getImageUrl} from "../utils/gcs.utils.js";
 import dotenv from "dotenv";
 
 dotenv.config({path: ".env"});
@@ -85,10 +85,10 @@ export const addUserInfo = async (req, res, next) => {
     if (user == null) {
       res.status(404).json({message: "Cannot find user"});
     } else {
-      const imageUrl = req.file
+      const imageUri = req.file
         ? await uploadImage(req.file, process.env.GCS_PROFILE_BUCKET, id)
         : null;
-      if (imageUrl != null) user.image = imageUrl;
+      if (imageUri != null) user.image = imageUri;
       if (req.body.username != null) user.username = req.body.username;
       if (req.body.ownProducts != null) user.ownProducts = req.body.ownProducts;
       if (req.body.isSeller != null) user.isSeller = req.body.isSeller;
@@ -121,16 +121,7 @@ export const getUserInfo = async (req, res, next) => {
     if (user == null) {
       res.status(404).json({message: "Cannot find user"});
     } else {
-      res.send({
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phoneNumber: user.phoneNumber,
-        prefix: user.prefix,
-        ownProducts: user.ownProducts,
-        image: user.image,
-      });
+      res.send(await user.getUserInfoJSON());
     }
   } catch (error) {
     res.status(500).json({message: error.message});
@@ -215,7 +206,7 @@ export const resetPassword = async (req, res, next) => {
 export const getNavbarInfo = async (req, res, next) => {
   try {
     const user = await User.findOne({_id: req.headers.user_id});
-    return res.json({user: user.getNavbarJSON()});
+    return res.json(await user.getNavbarInfoJSON());
   } catch (err) {
     return res.status(500).json({message: err.message});
   }

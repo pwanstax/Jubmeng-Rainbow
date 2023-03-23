@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-
+import {getImageUrl} from "../utils/gcs.utils.js";
 dotenv.config({path: ".env"});
 
 const secret = process.env.JWT_SECRET;
@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: "https://storage.cloud.google.com/jubmeng-profile/default.png",
+      default: "default.png",
     },
     ownProducts: {
       type: [String],
@@ -108,12 +108,33 @@ UserSchema.methods.getIdJSON = function () {
   };
 };
 
-UserSchema.methods.getNavbarJSON = function () {
+UserSchema.methods.getNavbarInfoJSON = async function () {
+  const imageUrl = await getImageUrl(
+    process.env.GCS_PROFILE_BUCKET,
+    this.image
+  );
   return {
     username: this.username,
     user_id: this._id,
-    image: this.image,
+    image: imageUrl,
     isLessor: this.isSeller,
+  };
+};
+
+UserSchema.methods.getUserInfoJSON = async function () {
+  const imageUrl = await getImageUrl(
+    process.env.GCS_PROFILE_BUCKET,
+    this.image
+  );
+  return {
+    username: this.username,
+    email: this.email,
+    firstName: this.firstName,
+    lastName: this.lastName,
+    phoneNumber: this.phoneNumber,
+    prefix: this.prefix,
+    ownProducts: this.ownProducts,
+    image: imageUrl,
   };
 };
 
