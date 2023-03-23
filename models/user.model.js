@@ -63,10 +63,19 @@ const UserSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
+    saveForLater: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Clinic",
+        },
+      ],
+      default: [],
+    },
     hash: String,
     salt: String,
   },
-  {timestamps: true}
+  { timestamps: true }
 );
 
 UserSchema.methods.validPassword = function (password) {
@@ -118,6 +127,13 @@ UserSchema.methods.getNavbarInfoJSON = async function () {
     user_id: this._id,
     image: imageUrl,
     isLessor: this.isSeller,
+  };
+};
+
+UserSchema.methods.getSaveForLater = function () {
+  return {
+    saveForLater: this.saveForLater,
+    count: this.saveForLater.length,
   };
 };
 

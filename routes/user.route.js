@@ -10,10 +10,13 @@ import {
   setSeller,
   getUserInfo,
   addUserInfo,
+  getSaveForLater,
+  addSaveForLater,
+  deleteSaveForLater,
 } from "../controllers/user.controller.js";
-import {errorHandler} from "../middlewares/error-handler.middleware.js";
+import { errorHandler } from "../middlewares/error-handler.middleware.js";
 import auth from "../middlewares/jwt.middleware.js";
-import {upload} from "../middlewares/image.middleware.js";
+import { upload } from "../middlewares/image.middleware.js";
 
 const router = express.Router();
 
@@ -29,5 +32,10 @@ router
   .route("/user/info")
   .post(auth.required, getUserInfo)
   .patch(auth.required, upload.single("image"), addUserInfo); // get user's info & (add and update user info)
+router.route("/user/save-for-later").get(getSaveForLater);
+router
+  .route("/user/save-for-later/:productId")
+  .patch(addSaveForLater)
+  .delete(deleteSaveForLater);
 
 export default router;
