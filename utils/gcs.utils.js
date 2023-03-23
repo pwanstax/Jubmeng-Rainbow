@@ -35,9 +35,9 @@ export const uploadImage = async (
       });
 
       stream.on("finish", async () => {
-        const imageUrl = `https://storage.cloud.google.com/${bucketName}/${imageName}`;
+        // const imageUrl = `https://storage.cloud.google.com/${bucketName}/${imageName}`;
         // const imageUrl = `https://storage.googleapis.com/${bucketName}/${imageName}`;
-        resolve(imageUrl);
+        resolve(imageName);
       });
 
       stream.end(imageBuffer);
@@ -46,4 +46,16 @@ export const uploadImage = async (
     console.error(err);
     throw err;
   }
+};
+
+export const getImageUrl = async (bucketName, imageName) => {
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(imageName);
+
+  const [url] = await file.getSignedUrl({
+    action: "read",
+    expires: Date.now() + 15 * 60 * 1000, // URL expires in 15 minutes
+  });
+
+  return url;
 };
