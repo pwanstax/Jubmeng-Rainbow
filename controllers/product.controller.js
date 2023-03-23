@@ -85,6 +85,7 @@ export const createProduct = (req, res, next) => {
 export const getEachProducts = async (req, res, next) => {
   let Product;
   const type = req.params.type;
+  console.log("inhere");
   if (type == "clinic") Product = Clinic;
   else if (type == "service") Product = Service;
   else if (type == "petfriendly") {
