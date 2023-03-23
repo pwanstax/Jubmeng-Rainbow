@@ -88,7 +88,7 @@ export const getReviews = async (req, res, next) => {
   } else if (type == "service") {
     if (req.query.id) condition.serviceID = req.query.id;
   } else if (type == "petfriendly") {
-    if (req.query.id) ccondition.petFriendlyID = req.query.id;
+    if (req.query.id) condition.petFriendlyID = req.query.id;
   } else {
     return res.status(500).json({
       message:
