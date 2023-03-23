@@ -3,7 +3,7 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
-dotenv.config({path: ".env"});
+dotenv.config({ path: ".env" });
 
 const secret = process.env.JWT_SECRET;
 
@@ -63,10 +63,19 @@ const UserSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
+    saveForLater: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Clinic",
+        },
+      ],
+      default: [],
+    },
     hash: String,
     salt: String,
   },
-  {timestamps: true}
+  { timestamps: true }
 );
 
 UserSchema.methods.validPassword = function (password) {
@@ -114,6 +123,13 @@ UserSchema.methods.getNavbarJSON = function () {
     user_id: this._id,
     image: this.image,
     isLessor: this.isSeller,
+  };
+};
+
+UserSchema.methods.getSaveForLater = function () {
+  return {
+    saveForLater: this.saveForLater,
+    count: this.saveForLater.length,
   };
 };
 
