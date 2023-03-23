@@ -67,12 +67,12 @@ export const filterByOpen = async (Product, condition, reqLat, reqLng) => {
   closeProducts = closeProducts.map((e) => e.toProductJSON());
   for (const product of closeProducts) product.openStatus = "Closed";
 
-  let manualCloseProducts = await Product.find(manualcloseCondition);
-  manualCloseProducts = manualCloseProducts.map((e) => e.toProductJSON());
-  for (const product of manualCloseProducts)
-    product.openStatus = "Temporary Closed";
+  let manual_close_products = await Product.find(manual_close_condition);
+  manual_close_products = manual_close_products.map((e) => e.toProductJSON());
+  for (const product of manual_close_products)
+    product.open_status = "Temporary Closed";
 
-  const products = openProducts.concat(closeProducts, manualCloseProducts);
+  const products = open_products.concat(close_products, manual_close_products);
 
   for (const product of products) {
     // if (product.images && product.images.length) {
@@ -108,6 +108,14 @@ export const makeCondition = (reqName, reqPetTags, reqServiceTags) => {
       {serviceTags: {$in: regex}},
     ];
   }
+  // let name_condition = {};
+  // if (req_name) {
+  //   name_condition.$or = [
+  //     {name: {$regex: req_name, $options: "i"}},
+  //     {description: {$regex: req_name, $options: "i"}},
+  //     // {petTags: {$in: [{$regex: req_name, $options: "i"}]}},
+  //   ];
+  // }
   let tagsCondition = {};
   let petTagsCondition = {};
   let serviceTagsCondition = {};
