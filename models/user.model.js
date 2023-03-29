@@ -63,20 +63,20 @@ const UserSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
-    saveForLater: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          refPath: "onModel",
-          onModel: {
-            type: String,
-            required: true,
-            enum: ["Clinic", "PetFriendly", "Service"],
-          },
+    saveForLater: [
+      {
+        _id: {
+          type: mongoose.ObjectId,
+          required: true,
+          refPath: "saveForLater.productType",
         },
-      ],
-    },
-    // saveForLater: [],
+        productType: {
+          type: String,
+          required: true,
+          enum: ["Clinic", "PetFriendly", "Service"],
+        },
+      },
+    ],
     hash: String,
     salt: String,
   },

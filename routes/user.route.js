@@ -32,9 +32,9 @@ router
   .route("/user/info")
   .post(auth.required, getUserInfo)
   .patch(auth.required, upload.single("image"), addUserInfo); // get user's info & (add and update user info)
-router.route("/user/save-for-later").get(getSaveForLater);
 router
-  .route("/user/save-for-later/:productId")
+  .route("/user/save-for-later")
+  .get(getSaveForLater)
   .patch(addSaveForLater)
   .delete(deleteSaveForLater);
 
