@@ -65,7 +65,7 @@ PetFriendlySchema.methods.toProductJSON = function () {
     description: this.description || "",
     openHours: formatOpenHours(this.openHours),
     placeType: this.placeType || "",
-    todayCloseAt: checkOpenOrClose(this.openHours, this.manualClose)[1],
+    openStatusTimeDetail: checkOpenOrClose(this.openHours, this.manualClose)[1],
   };
 };
 
@@ -90,7 +90,7 @@ PetFriendlySchema.methods.toProductDetailJSON = function () {
     prices: this.prices,
     placeType: this.placeType || "",
     openStatus: checkOpenOrClose(this.openHours, this.manualClose)[0],
-    todayCloseAt: checkOpenOrClose(this.openHours, this.manualClose)[1],
+    openStatusTimeDetail: checkOpenOrClose(this.openHours, this.manualClose)[1],
   };
 };
 

@@ -1,5 +1,66 @@
 import moment from "moment-timezone";
-
+export const petTags = [
+  "Cat",
+  "Dog",
+  "Bird",
+  "Lion",
+  "Rabbit",
+  "Fish",
+  "Hamster",
+  "Turtle",
+  "Horse",
+  "Chicken",
+  "Guinea pig",
+];
+export const serviceTags = {
+  clinic: [
+    "Veterinary",
+    "Outpatient Service",
+    "Vaccination",
+    "Spay and Neuter",
+    "Dental Care",
+    "Health Examination",
+    "Microchipping",
+    "Surgery",
+    "Mass Removal",
+    "Physiotherapy",
+    "Online Veterinary",
+    "Housecall Vet",
+    "Cat-friendly Clinic",
+    "Chinese Medicine",
+    "Acupuncture",
+  ],
+  service: [
+    "Pet Massage",
+    "Animal Communication Service",
+    "Pet Swimming",
+    "Hydrotherapy",
+    "Day Care",
+    "Dog Walking",
+    "Pet Sitting At Home",
+    "Pet Boarding",
+    "Pet Transportation",
+    "Pet Hospice",
+    "Grooming Shop",
+    "Spa",
+  ],
+  petfriendly: [
+    "Restaurant",
+    "Pet Garden",
+    "Inclusive Parks for Pets",
+    "Shopping Mall",
+    "Walking Trail & Hiking",
+    "Swimming Pool",
+    "Camp Site",
+    "Cultural & Heritage",
+    "Event Space",
+    "Photo Studio",
+    "Wedding Venue",
+    "Hotel",
+    "Beach",
+    "Water Activities",
+  ],
+};
 const Product = {
   owner: {
     type: String,
@@ -177,25 +238,57 @@ export const mapServiceTagIcon = (tags) => {
   }
   return ret;
 };
-
+const getTimeFromInt = (int) => {
+  return (
+    ("0" + Math.floor(int / 60)).slice(-2) + ":" + ("0" + (int % 60)).slice(-2)
+  );
+};
 export const checkOpenOrClose = (openHours, manualClose) => {
   const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const mapDays = new Map([
+    ["mon", "Monday"],
+    ["tue", "Tuesday"],
+    ["wed", "Wednesday"],
+    ["thu", "Thursday"],
+    ["fri", "Friday"],
+    ["sat", "Saturday"],
+    ["sun", "Sunday"],
+  ]);
   const now = moment().tz("Asia/Bangkok");
   const nowDay = days[now.isoWeekday() - 1];
   const nowTime = now.hours() * 60 + now.minutes();
   if (manualClose) return ["Temporary Closed", ""];
+  let firstOpen = "";
+  let openAgain = "";
+  let passNowDay = false;
   for (const e of openHours) {
-    if (e.day != nowDay) continue;
-    for (const period of e.periods) {
-      if (period.openAt <= nowTime && period.closeAt >= nowTime) {
-        return [
-          "Open",
-          ("0" + Math.floor(period.closeAt / 60)).slice(-2) +
-            ":" +
-            ("0" + (period.closeAt % 60)).slice(-2),
-        ];
+    if (!firstOpen) {
+      firstOpen = `${mapDays.get(e.day)} at ${getTimeFromInt(
+        e.periods[0].openAt
+      )}`;
+    }
+    if (e.day != nowDay && !passNowDay) {
+      continue;
+    } else if (e.day == nowDay) {
+      passNowDay = true;
+      for (const period of e.periods) {
+        if (period.openAt <= nowTime && period.closeAt >= nowTime) {
+          return ["Open", getTimeFromInt(period.closeAt)];
+        } else if (period.openAt > nowTime) {
+          return [
+            "Closed",
+            `${mapDays.get(e.day)} at ${getTimeFromInt(period.openAt)}`,
+          ];
+        }
       }
+    } else if (passNowDay) {
+      openAgain = `${mapDays.get(e.day)} at ${getTimeFromInt(
+        e.periods[0].openAt
+      )}`;
     }
   }
-  return ["Closed", ""];
+  if (!openAgain) {
+    return ["Closed", firstOpen];
+  }
+  return ["Closed", openAgain];
 };

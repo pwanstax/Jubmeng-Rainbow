@@ -2,6 +2,9 @@ import User from "../models/user.model.js";
 import Clinic from "../models/clinic.model.js";
 import Service from "../models/service.model.js";
 import PetFriendly from "../models/petfriendly.model.js";
+import {uploadImage} from "../utils/gcs.utils.js";
+import {serviceTags, petTags} from "../models/schema/product.schema.js";
+import {ObjectId} from "bson";
 import {
   filterByOpen,
   makeCondition,
@@ -11,13 +14,16 @@ import {
 // @desc Create product
 // @route POST /product/:type
 // @access Private -> seller, admin
-export const createProduct = (req, res, next) => {
-  const {
+export const createProduct = async (req, res, next) => {
+  let {
     owner,
     name,
     phones,
-    socialNetworks,
-    status,
+    facebook,
+    instagram,
+    lineID,
+    twitter,
+    status = "Pending",
     description,
     province,
     amphure,
@@ -27,16 +33,14 @@ export const createProduct = (req, res, next) => {
     longitude,
     petTags,
     serviceTags,
-    images,
     licenseID,
     openHours,
     placeType,
-    rating,
+    rating = 0,
     reviewCounts,
     prices,
     manualClose,
-  } = req.body.product;
-
+  } = req.body;
   const type = req.params.type;
   let product;
   if (type == "clinic") product = new Clinic();
@@ -48,11 +52,40 @@ export const createProduct = (req, res, next) => {
         "request parameter must be 'clinic' or 'service' or 'petfriendly'",
     });
   }
+  //for case list has only one element
+  if (phones && typeof phones != "object") phones = [phones];
+  if (petTags && typeof petTags != "object") petTags = [petTags];
+  if (serviceTags && typeof serviceTags != "object")
+    serviceTags = [serviceTags];
+  if (openHours && typeof openHours != "object") openHours = [openHours];
+  if (prices && typeof prices != "object") prices = [prices];
 
+  let socialNetworks = {};
+  if (lineID) socialNetworks.lineID = lineID;
+  if (facebook) socialNetworks.facebook = facebook;
+  if (instagram) socialNetworks.instagram = instagram;
+  if (twitter) socialNetworks.twitter = twitter;
+
+  const id = req.body.owner_user_id;
+  const productId = new ObjectId();
+
+  const images = req.files["images"];
+  const imageUris = [];
+  for (const image of images) {
+    const imageUri = await uploadImage(
+      image,
+      process.env.GCS_PROFILE_BUCKET,
+      `${id}/${productId}`,
+      null
+    );
+    imageUris.push(imageUri);
+  }
+  product._id = productId;
   if (owner) product.owner = owner;
   if (name) product.name = name;
   if (phones) product.phones = phones;
-  if (socialNetworks) product.socialNetworks = socialNetworks;
+  if (Object.keys(socialNetworks).length)
+    product.socialNetworks = socialNetworks;
   if (status) product.status = status;
   if (description) product.description = description;
   if (province) product.province = province;
@@ -60,14 +93,14 @@ export const createProduct = (req, res, next) => {
   if (tambon) product.tambon = tambon;
   if (locationDescription) product.locationDescription = locationDescription;
   if (latitude && longitude) product.setLocation(latitude, longitude);
-  if (images) product.images = images;
+  if (imageUris.length) product.images = imageUris;
   if (petTags) product.petTags = petTags;
   if (serviceTags) product.serviceTags = serviceTags;
   if (licenseID) product.licenseID = licenseID;
-  if (openHours) product.setOpenHours(openHours);
+  if (openHours) product.setOpenHours(openHours.map((e) => JSON.parse(e)));
   if (rating) product.rating = rating;
   if (reviewCounts) product.reviewCounts = reviewCounts;
-  if (prices) product.prices = prices;
+  if (prices) product.prices = prices.map((e) => JSON.parse(e));
   if (type == "petfriendly" && placeType) product.placeType = placeType;
   if (manualClose) product.manualClose = manualClose;
 
@@ -222,4 +255,18 @@ export const getMyProducts = async (req, res, next) => {
   } catch (error) {
     res.status(500).json({message: error.message});
   }
+};
+
+export const getTags = (req, res, next) => {
+  const type = req.params.type;
+  if (type != "clinic" && type != "service" && type != "petfriendly") {
+    return res.status(500).json({
+      message:
+        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
+    });
+  }
+  return res.json({
+    petTags: petTags,
+    serviceTags: serviceTags[type],
+  });
 };
