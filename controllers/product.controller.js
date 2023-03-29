@@ -182,3 +182,26 @@ export const getProductInfo = async (req, res, next) => {
     return res.status(500).json({message: err.message});
   }
 };
+
+export const getMyProducts = async (req, res, next) => {
+  const username = req.params.username;
+  try {
+    const condition = makeCondition(null, null, null, {owner: username});
+    let petFriendly = await PetFriendly.find(condition);
+    let clinic = await Clinic.find(condition);
+    let service = await Service.find(condition);
+
+    const myProducts = [...petFriendly, ...clinic, ...service];
+    const withType = myProducts.map((e) => {
+      const product = e.toProductJSON();
+      product.type = e.constructor.modelName.toLowerCase();
+      return product;
+    });
+
+    res.send({
+      myProducts: withType,
+    });
+  } catch (error) {
+    res.status(500).json({message: error.message});
+  }
+};

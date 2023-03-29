@@ -92,8 +92,12 @@ export const filterByOpen = async (Product, condition, reqLat, reqLng) => {
   return products;
 };
 
-export const makeCondition = (reqName, reqPetTags, reqServiceTags) => {
-  let condition = {};
+export const makeCondition = (
+  reqName,
+  reqPetTags,
+  reqServiceTags,
+  condition = {}
+) => {
   let nameCondition = {};
 
   if (reqName) {
