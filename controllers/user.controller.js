@@ -245,7 +245,7 @@ export const addSaveForLater = async (req, res, next) => {
   } else {
     return res.status(500).json({
       message:
-        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
+        "productType must be 'Clinic' or 'Service' or 'PetFriendly'",
     });
   }
 
