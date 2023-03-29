@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import {getImageUrl} from "../utils/gcs.utils.js";
-dotenv.config({path: ".env"});
+import { getImageUrl } from "../utils/gcs.utils.js";
+dotenv.config({ path: ".env" });
 
 const secret = process.env.JWT_SECRET;
 
@@ -63,15 +63,20 @@ const UserSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
-    saveForLater: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Clinic",
+    saveForLater: [
+      {
+        _id: {
+          type: mongoose.ObjectId,
+          required: true,
+          refPath: "saveForLater.productType",
         },
-      ],
-      default: [],
-    },
+        productType: {
+          type: String,
+          required: true,
+          enum: ["Clinic", "PetFriendly", "Service"],
+        },
+      },
+    ],
     hash: String,
     salt: String,
   },
