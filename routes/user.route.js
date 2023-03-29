@@ -34,8 +34,8 @@ router
   .patch(auth.required, upload.single("image"), addUserInfo); // get user's info & (add and update user info)
 router
   .route("/user/save-for-later")
-  .get(getSaveForLater)
-  .patch(addSaveForLater)
-  .delete(deleteSaveForLater);
+  .get(auth.required, getSaveForLater)
+  .patch(auth.required, addSaveForLater)
+  .delete(auth.required, deleteSaveForLater);
 
 export default router;
