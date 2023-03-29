@@ -98,6 +98,9 @@ export const getReviews = async (req, res, next) => {
   }
 };
 
+// @desc Get specific review
+// @route POST /review-info/:id
+// @access Private
 export const getReviewInfo = async (req, res, next) => {
   const {id} = req.params;
   try {
