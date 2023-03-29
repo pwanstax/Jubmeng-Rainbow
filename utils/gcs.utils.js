@@ -12,17 +12,23 @@ const storage = new Storage({
 
 const upload = multer({storage: multer.memoryStorage()});
 
+// to optimize => might have to get name of image from database to delete (if same name, different ext)
 export const uploadImage = async (
   file,
   bucketName,
-  filename = `${Date.now()}-${file.originalname}`
+  subfolderName,
+  filename
 ) => {
-  const bucket = storage.bucket(bucketName);
-  if (filename !== file.originalname) {
+  if (filename && filename !== file.originalname) {
     filename = filename + path.extname(file.originalname);
   }
+  if (!filename) {
+    filename = `${subfolderName}/${Date.now()}-${file.originalname}`;
+  }
+
+  const bucket = storage.bucket(bucketName);
   try {
-    const imageName = filename; // might have a problem when save at the same times with a same file's name
+    const imageName = filename;
     const imageBuffer = file.buffer;
 
     const blob = bucket.file(imageName);
@@ -35,8 +41,6 @@ export const uploadImage = async (
       });
 
       stream.on("finish", async () => {
-        // const imageUrl = `https://storage.cloud.google.com/${bucketName}/${imageName}`;
-        // const imageUrl = `https://storage.googleapis.com/${bucketName}/${imageName}`;
         resolve(imageName);
       });
 
@@ -48,9 +52,20 @@ export const uploadImage = async (
   }
 };
 
-export const getImageUrl = async (bucketName, imageName) => {
+export const getImageUrl = async (bucketName, subfolderName, imageName) => {
+  if (
+    bucketName === process.env.GCS_PROFILE_BUCKET &&
+    imageName.startsWith("https://lh3.googleusercontent.com")
+  ) {
+    return imageName;
+  }
   const bucket = storage.bucket(bucketName);
-  const file = bucket.file(imageName);
+  let file;
+  if (!subfolderName) {
+    file = bucket.file(imageName);
+  } else {
+    file = bucket.file(`${subfolderName}/${imageName}`);
+  }
 
   const [url] = await file.getSignedUrl({
     action: "read",
@@ -58,4 +73,22 @@ export const getImageUrl = async (bucketName, imageName) => {
   });
 
   return url;
+};
+
+export const deleteImage = async (bucketName, subfolderName, imageName) => {
+  const bucket = storage.bucket(bucketName);
+  let file;
+  if (!subfolderName) {
+    file = bucket.file(imageName);
+  } else {
+    file = bucket.file(`${subfolderName}/${imageName}`);
+  }
+
+  try {
+    await file.delete();
+    console.log(`File ${imageName} deleted successfully.`);
+  } catch (err) {
+    console.error(`Error deleting file ${imageName}:`, err);
+    throw err;
+  }
 };

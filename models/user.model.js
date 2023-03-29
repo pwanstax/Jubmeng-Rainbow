@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { getImageUrl } from "../utils/gcs.utils.js";
-dotenv.config({ path: ".env" });
+import {getImageUrl} from "../utils/gcs.utils.js";
+dotenv.config({path: ".env"});
 
 const secret = process.env.JWT_SECRET;
 
@@ -125,6 +125,7 @@ UserSchema.methods.getIdJSON = function () {
 UserSchema.methods.getNavbarInfoJSON = async function () {
   const imageUrl = await getImageUrl(
     process.env.GCS_PROFILE_BUCKET,
+    null,
     this.image
   );
   return {
@@ -145,6 +146,7 @@ UserSchema.methods.getSaveForLater = function () {
 UserSchema.methods.getUserInfoJSON = async function () {
   const imageUrl = await getImageUrl(
     process.env.GCS_PROFILE_BUCKET,
+    null,
     this.image
   );
   return {
