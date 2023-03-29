@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import {getImageUrl} from "../utils/gcs.utils.js";
-dotenv.config({path: ".env"});
+import { getImageUrl } from "../utils/gcs.utils.js";
+dotenv.config({ path: ".env" });
 
 const secret = process.env.JWT_SECRET;
 
@@ -67,11 +67,16 @@ const UserSchema = new mongoose.Schema(
       type: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Clinic",
+          refPath: "onModel",
+          onModel: {
+            type: String,
+            required: true,
+            enum: ["Clinic", "PetFriendly", "Service"],
+          },
         },
       ],
-      default: [],
     },
+    // saveForLater: [],
     hash: String,
     salt: String,
   },
