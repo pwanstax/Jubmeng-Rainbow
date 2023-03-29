@@ -3,6 +3,9 @@ import Clinic from "../models/clinic.model.js";
 import Service from "../models/service.model.js";
 import PetFriendly from "../models/petfriendly.model.js";
 
+// @desc Create a review
+// @route POST /review
+// @access Private -> seller, admin
 export const createReview = async (req, res, next) => {
   const review = new Review();
   const {
@@ -63,23 +66,9 @@ export const createReview = async (req, res, next) => {
   }
 };
 
-export const sortReviews = (reviews, reqSort) => {
-  if (reqSort == "lowest_rating") {
-    reviews.sort((a, b) => (a.rating < b.rating ? -1 : 1));
-  } else if (reqSort == "highest_rating") {
-    reviews.sort((a, b) => (a.rating > b.rating ? -1 : 1));
-  } else if (reqSort == "oldest") {
-    reviews.sort((a, b) =>
-      new Date(a.createdAtDateTime) < new Date(b.createdAtDateTime) ? -1 : 1
-    );
-  } else if (reqSort == "newest") {
-    reviews.sort((a, b) =>
-      new Date(a.createdAtDateTime) > new Date(b.createdAtDateTime) ? -1 : 1
-    );
-  }
-  return reviews;
-};
-
+// @desc Get all reviews
+// @route POST /review
+// @access Public
 export const getReviews = async (req, res, next) => {
   let condition = {};
   const type = req.params.type;
@@ -101,14 +90,17 @@ export const getReviews = async (req, res, next) => {
     reviews.sort(function (a, b) {
       return b.rating - a.rating;
     });
-    const sendReviews = reviews.map((e) => e.toProductDetailJSON());
-    const sortedReviews = sortReviews(sendReviews, req.query.sort);
-    return res.json({reviews: sortedReviews});
+    const sortedReviews = await Review.sortReviews(reviews, req.query.sort);
+    const sendReviews = sortedReviews.map((e) => e.toProductDetailJSON());
+    return res.json({reviews: sendReviews});
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
 };
 
+// @desc Get specific review
+// @route POST /review-info/:id
+// @access Private
 export const getReviewInfo = async (req, res, next) => {
   const {id} = req.params;
   try {
