@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import User from "../models/user.model.js";
+import Clinic from "../models/clinic.model.js";
+import Service from "../models/service.model.js";
+import PetFriendly from "../models/petfriendly.model.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import multer from "multer";
@@ -205,7 +208,7 @@ export const resetPassword = async (req, res, next) => {
 
 export const getNavbarInfo = async (req, res, next) => {
   try {
-    const user = await User.findOne({_id: req.headers.user_id});
+    const user = await User.findOne({ _id: req.headers.user_id });
     return res.json(await user.getNavbarInfoJSON());
   } catch (err) {
     return res.status(500).json({ message: err.message });
@@ -220,7 +223,7 @@ export const getSaveForLater = async (req, res, next) => {
   const { user_id } = req.headers;
   try {
     const user = await User.findOne({ _id: user_id }).populate({
-      path: "saveForLater",
+      path: "saveForLater._id",
     });
     return res.json({ data: user.getSaveForLater() });
   } catch (err) {
@@ -230,10 +233,32 @@ export const getSaveForLater = async (req, res, next) => {
 
 export const addSaveForLater = async (req, res, next) => {
   const { user_id } = req.headers;
-  const { productId } = req.params;
+  const { productId, productType } = req.body;
+
+  let Product;
+  if (productType == "Clinic") {
+    Product = Clinic;
+  } else if (productType == "Service") {
+    Product = Service;
+  } else if (productType == "PetFriendly") {
+    Product = PetFriendly;
+  } else {
+    return res.status(500).json({
+      message:
+        "productType must be 'Clinic' or 'Service' or 'PetFriendly'",
+    });
+  }
+
+  let product = await Product.findById(productId);
+  if (!product) {
+    return res.status(404).send({
+      error: "Product not found",
+    });
+  }
+
   try {
     const user = await User.findByIdAndUpdate(user_id, {
-      $push: { saveForLater: productId },
+      $addToSet: { saveForLater: { _id: productId, productType } },
     });
     res
       .status(200)
@@ -245,10 +270,10 @@ export const addSaveForLater = async (req, res, next) => {
 
 export const deleteSaveForLater = async (req, res, next) => {
   const { user_id } = req.headers;
-  const { productId } = req.params;
+  const { productId } = req.body;
   try {
     const user = await User.findByIdAndUpdate(user_id, {
-      $pull: { saveForLater: productId },
+      $pull: { saveForLater: { _id: productId } },
     });
     res
       .status(200)
