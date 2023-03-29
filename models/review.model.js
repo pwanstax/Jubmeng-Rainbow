@@ -64,5 +64,23 @@ ReviewSchema.methods.toProductDetailJSON = function () {
     createdAt: this.createdAt.toLocaleDateString("en-US", options),
   };
 };
+
+ReviewSchema.statics.sortReviews = function (reviews, reqSort) {
+  if (reqSort == "lowest_rating") {
+    reviews.sort((a, b) => (a.rating < b.rating ? -1 : 1));
+  } else if (reqSort == "highest_rating") {
+    reviews.sort((a, b) => (a.rating > b.rating ? -1 : 1));
+  } else if (reqSort == "oldest") {
+    reviews.sort((a, b) =>
+      new Date(a.createdAtDateTime) < new Date(b.createdAtDateTime) ? -1 : 1
+    );
+  } else if (reqSort == "newest") {
+    reviews.sort((a, b) =>
+      new Date(a.createdAtDateTime) > new Date(b.createdAtDateTime) ? -1 : 1
+    );
+  }
+  return reviews;
+};
+
 const Review = mongoose.model("Review", ReviewSchema);
 export default Review;

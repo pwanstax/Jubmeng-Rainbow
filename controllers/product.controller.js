@@ -7,6 +7,10 @@ import {
   makeCondition,
   sortProducts,
 } from "../utils/product.utils.js";
+
+// @desc Create product
+// @route POST /product/:type
+// @access Private -> seller, admin
 export const createProduct = (req, res, next) => {
   const {
     owner,
@@ -82,6 +86,9 @@ export const createProduct = (req, res, next) => {
     });
 };
 
+// @desc Get all products for specific type
+// @route GET /products/:type
+// @access Public
 export const getEachProducts = async (req, res, next) => {
   let Product;
   const type = req.params.type;
@@ -122,6 +129,9 @@ export const getEachProducts = async (req, res, next) => {
   }
 };
 
+// @desc Get all products for all type
+// @route GET /products
+// @access Public
 export const getProducts = async (req, res, next) => {
   let condition = {};
   try {
@@ -162,6 +172,9 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
+// @desc Get the information of specific product
+// @route GET /product/:type/:id
+// @access Public
 export const getProductInfo = async (req, res, next) => {
   let Product;
   const type = req.params.type;
@@ -183,10 +196,15 @@ export const getProductInfo = async (req, res, next) => {
   }
 };
 
+// @desc Get all products of a seller
+// @route GET /products/me/:username
+// @access Private -> seller, admin
 export const getMyProducts = async (req, res, next) => {
   const username = req.params.username;
   try {
-    const condition = makeCondition(null, null, null, {owner: username});
+    const condition = makeCondition(null, null, null, {
+      owner: username,
+    });
     let petFriendly = await PetFriendly.find(condition);
     let clinic = await Clinic.find(condition);
     let service = await Service.find(condition);
