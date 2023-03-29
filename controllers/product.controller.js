@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import Clinic from "../models/clinic.model.js";
 import Service from "../models/service.model.js";
 import PetFriendly from "../models/petfriendly.model.js";
-import {uploadImage} from "../utils/gcs.utils.js";
+import {uploadImage, getImageUrl} from "../utils/gcs.utils.js";
 import {serviceTags, petTags} from "../models/schema/product.schema.js";
 import {ObjectId} from "bson";
 import {
@@ -74,12 +74,13 @@ export const createProduct = async (req, res, next) => {
   for (const image of images) {
     const imageUri = await uploadImage(
       image,
-      process.env.GCS_PROFILE_BUCKET,
+      process.env.GCS_MERCHANT_IMAGES_BUCKET,
       `${id}/${productId}`,
       null
     );
     imageUris.push(imageUri);
   }
+  console.log("count in");
   product._id = productId;
   if (owner) product.owner = owner;
   if (name) product.name = name;
@@ -156,6 +157,14 @@ export const getEachProducts = async (req, res, next) => {
       req.query.longitude
     );
     products = sortProducts(products, req.query.sort);
+    for (const product of products) {
+      let imageUrl = await getImageUrl(
+        process.env.GCS_MERCHANT_IMAGES_BUCKET,
+        null,
+        product.image
+      );
+      product.image = imageUrl;
+    }
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
@@ -199,6 +208,15 @@ export const getProducts = async (req, res, next) => {
 
     let products = clinics.concat(services, petfriendlies);
     products = sortProducts(products, req.query.sort);
+    for (const product of products) {
+      let imageUrl = await getImageUrl(
+        process.env.GCS_MERCHANT_IMAGES_BUCKET,
+        null,
+        product.image
+      );
+      product.image = imageUrl;
+    }
+
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
@@ -223,7 +241,7 @@ export const getProductInfo = async (req, res, next) => {
   }
   try {
     const product = await Product.findById(id);
-    return res.json(product.toProductDetailJSON());
+    return res.json(await product.toProductDetailJSON());
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
