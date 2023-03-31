@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {getImageUrl} from "../utils/gcs.utils.js";
 import Product from "./schema/product.schema.js";
 import {
   formatOpenHours,
@@ -65,7 +66,16 @@ ServiceSchema.methods.toProductJSON = function () {
   };
 };
 
-ServiceSchema.methods.toProductDetailJSON = function () {
+ServiceSchema.methods.toProductDetailJSON = async function () {
+  let imageUrls = [];
+  for (const image of this.images) {
+    let imageUrl = await getImageUrl(
+      process.env.GCS_MERCHANT_IMAGES_BUCKET,
+      null,
+      image
+    );
+    imageUrls.push(imageUrl);
+  }
   return {
     owner: this.owner,
     name: this.name,
@@ -75,7 +85,7 @@ ServiceSchema.methods.toProductDetailJSON = function () {
     amphure: this.amphure,
     tambon: this.tambon,
     status: this.status,
-    images: this.images,
+    images: imageUrls,
     locationDescription: this.locationDescription,
     location: this.location,
     tags: mapServiceTagIcon(this.serviceTags),

@@ -240,6 +240,7 @@ export const getProductInfo = async (req, res, next) => {
     });
   }
   try {
+    console.log("in");
     const product = await Product.findById(id);
     return res.json(await product.toProductDetailJSON());
   } catch (err) {
