@@ -275,6 +275,9 @@ export const getMyProducts = async (req, res, next) => {
   }
 };
 
+// @desc Get all Tags of product
+// @route GET /products/tags/:type
+// @access Public
 export const getTags = (req, res, next) => {
   const type = req.params.type;
   if (type != "clinic" && type != "service" && type != "petfriendly") {
