@@ -92,7 +92,12 @@ export const getReviews = async (req, res, next) => {
     });
     const sortedReviews = await Review.sortReviews(reviews, req.query.sort);
     const sendReviews = sortedReviews.map((e) => e.toProductDetailJSON());
-    return res.json({reviews: sendReviews});
+    const ratingCount = await Review.aggregate([
+      {$group: {_id: "$rating", count: {$sum: 1}}},
+      {$project: {_id: 0, rating: "$_id", count: 1}},
+    ]);
+    console.log(ratingCount);
+    return res.json({reviews: sendReviews, ratingCount: ratingCount});
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
