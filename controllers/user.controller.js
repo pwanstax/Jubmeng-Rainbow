@@ -3,9 +3,7 @@ import mongoose from "mongoose";
 import passport from "passport";
 import {Strategy as LocalStrategy} from "passport-local";
 import User from "../models/user.model.js";
-import Clinic from "../models/clinic.model.js";
-import Service from "../models/service.model.js";
-import PetFriendly from "../models/petfriendly.model.js";
+import Product from "../models/product.model.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import multer from "multer";
@@ -270,19 +268,6 @@ export const getSaveForLater = async (req, res, next) => {
 export const addSaveForLater = async (req, res, next) => {
   const {user_id} = req.headers;
   const {productId, productType} = req.body;
-
-  let Product;
-  if (productType == "Clinic") {
-    Product = Clinic;
-  } else if (productType == "Service") {
-    Product = Service;
-  } else if (productType == "PetFriendly") {
-    Product = PetFriendly;
-  } else {
-    return res.status(500).json({
-      message: "productType must be 'Clinic' or 'Service' or 'PetFriendly'",
-    });
-  }
 
   let product = await Product.findById(productId);
   if (!product) {

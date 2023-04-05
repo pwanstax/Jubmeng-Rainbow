@@ -1,18 +1,17 @@
 import User from "../models/user.model.js";
-import Clinic from "../models/clinic.model.js";
-import Service from "../models/service.model.js";
-import PetFriendly from "../models/petfriendly.model.js";
+import Product from "../models/product.model.js";
 import {uploadImage, getImageUrl} from "../utils/gcs.utils.js";
-import {serviceTags, petTags} from "../models/schema/product.schema.js";
-import {ObjectId} from "bson";
 import {
+  serviceTags,
+  petTags,
   filterByOpen,
   makeCondition,
   sortProducts,
-} from "../utils/product.utils.js";
+} from "../helpers/product.helpers.js";
+import {ObjectId} from "bson";
 
 // @desc Create product
-// @route POST /product/:type
+// @route POST /product
 // @access Private -> seller, admin
 export const createProduct = async (req, res, next) => {
   let {
@@ -41,17 +40,8 @@ export const createProduct = async (req, res, next) => {
     prices,
     manualClose,
   } = req.body;
-  const type = req.params.type;
-  let product;
-  if (type == "clinic") product = new Clinic();
-  else if (type == "service") product = new Service();
-  else if (type == "petfriendly") product = new PetFriendly();
-  else {
-    return res.status(500).json({
-      message:
-        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
-    });
-  }
+  let product = new Product();
+
   //for case list has only one element
   if (phones && typeof phones != "object") phones = [phones];
   if (petTags && typeof petTags != "object") petTags = [petTags];
@@ -80,7 +70,7 @@ export const createProduct = async (req, res, next) => {
     );
     imageUris.push(imageUri);
   }
-  console.log("count in");
+
   product._id = productId;
   if (owner) product.owner = owner;
   if (name) product.name = name;
@@ -102,13 +92,13 @@ export const createProduct = async (req, res, next) => {
   if (rating) product.rating = rating;
   if (reviewCounts) product.reviewCounts = reviewCounts;
   if (prices) product.prices = prices.map((e) => JSON.parse(e));
-  if (type == "petfriendly" && placeType) product.placeType = placeType;
+  if (placeType) product.placeType = placeType;
   if (manualClose) product.manualClose = manualClose;
 
   product
     .save()
     .then(function () {
-      return res.json({product: product.toAuthJSON()});
+      return res.json(product.confirmProductInfo());
     })
     .catch(function (error) {
       if (error.code === 11000) {
@@ -120,24 +110,10 @@ export const createProduct = async (req, res, next) => {
     });
 };
 
-// @desc Get all products for specific type
-// @route GET /products/:type
+// @desc Get all products
+// @route GET /products
 // @access Public
-export const getEachProducts = async (req, res, next) => {
-  let Product;
-  const type = req.params.type;
-  console.log("inhere");
-  if (type == "clinic") Product = Clinic;
-  else if (type == "service") Product = Service;
-  else if (type == "petfriendly") {
-    Product = PetFriendly;
-  } else {
-    return res.status(500).json({
-      message:
-        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
-    });
-  }
-
+export const getProducts = async (req, res, next) => {
   let condition = {};
   try {
     condition = makeCondition(
@@ -156,67 +132,8 @@ export const getEachProducts = async (req, res, next) => {
       req.query.latitude,
       req.query.longitude
     );
+
     products = sortProducts(products, req.query.sort);
-    for (const product of products) {
-      let imageUrl = await getImageUrl(
-        process.env.GCS_MERCHANT_IMAGES_BUCKET,
-        null,
-        product.image
-      );
-      product.image = imageUrl;
-    }
-    return res.json(products);
-  } catch (err) {
-    return res.status(500).json({message: err.message});
-  }
-};
-
-// @desc Get all products for all type
-// @route GET /products
-// @access Public
-export const getProducts = async (req, res, next) => {
-  let condition = {};
-  try {
-    condition = makeCondition(
-      req.query.name,
-      req.query.petTags,
-      req.query.serviceTags
-    );
-  } catch (err) {
-    return res.status(500).json({message: err.message});
-  }
-
-  try {
-    const clinics = await filterByOpen(
-      Clinic,
-      condition,
-      req.query.latitude,
-      req.query.longitude
-    );
-    const services = await filterByOpen(
-      Service,
-      condition,
-      req.query.latitude,
-      req.query.longitude
-    );
-    const petfriendlies = await filterByOpen(
-      PetFriendly,
-      condition,
-      req.query.latitude,
-      req.query.longitude
-    );
-
-    let products = clinics.concat(services, petfriendlies);
-    products = sortProducts(products, req.query.sort);
-    for (const product of products) {
-      let imageUrl = await getImageUrl(
-        process.env.GCS_MERCHANT_IMAGES_BUCKET,
-        null,
-        product.image
-      );
-      product.image = imageUrl;
-    }
-
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
@@ -224,23 +141,11 @@ export const getProducts = async (req, res, next) => {
 };
 
 // @desc Get the information of specific product
-// @route GET /product/:type/:id
+// @route GET /product/:id
 // @access Public
 export const getProductInfo = async (req, res, next) => {
-  let Product;
-  const type = req.params.type;
   const id = req.params.id;
-  if (type == "clinic") Product = Clinic;
-  else if (type == "service") Product = Service;
-  else if (type == "petfriendly") Product = PetFriendly;
-  else {
-    return res.status(500).json({
-      message:
-        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
-    });
-  }
   try {
-    console.log("in");
     const product = await Product.findById(id);
     return res.json(await product.toProductDetailJSON());
   } catch (err) {
@@ -257,19 +162,13 @@ export const getMyProducts = async (req, res, next) => {
     const condition = makeCondition(null, null, null, {
       owner: username,
     });
-    let petFriendly = await PetFriendly.find(condition);
-    let clinic = await Clinic.find(condition);
-    let service = await Service.find(condition);
-
-    const myProducts = [...petFriendly, ...clinic, ...service];
-    const withType = myProducts.map((e) => {
+    let myProducts = await Product.find(condition);
+    myProducts = myProducts.map((e) => {
       const product = e.toProductJSON();
-      product.type = e.constructor.modelName.toLowerCase();
       return product;
     });
-
     res.send({
-      myProducts: withType,
+      myProducts: myProducts,
     });
   } catch (error) {
     res.status(500).json({message: error.message});
@@ -277,18 +176,11 @@ export const getMyProducts = async (req, res, next) => {
 };
 
 // @desc Get all Tags of product
-// @route GET /products/tags/:type
+// @route GET /products/tags
 // @access Public
 export const getTags = (req, res, next) => {
-  const type = req.params.type;
-  if (type != "clinic" && type != "service" && type != "petfriendly") {
-    return res.status(500).json({
-      message:
-        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
-    });
-  }
   return res.json({
     petTags: petTags,
-    serviceTags: serviceTags[type],
+    serviceTags: serviceTags,
   });
 };

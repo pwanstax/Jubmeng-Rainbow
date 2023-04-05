@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  getEachProducts,
   createProduct,
   getProducts,
   getProductInfo,
@@ -12,17 +11,16 @@ import {upload} from "../middlewares/image.middleware.js";
 
 const router = express.Router();
 
-router.route("/products/").get(getProducts);
+router.route("/products").get(getProducts);
 router
-  .route("/product/:type")
+  .route("/product")
   .post(
     auth.required,
     upload.fields([{name: "images", maxCount: 10}]),
     createProduct
   );
 
-router.route("/products/:type").get(getEachProducts);
-router.route("/product/:type/:id").get(getProductInfo);
+router.route("/product/:id").get(getProductInfo);
 router.route("/products/me/:username").get(auth.required, getMyProducts);
-router.route("/products/tags/:type").get(getTags);
+router.route("/products/tags").get(getTags);
 export default router;

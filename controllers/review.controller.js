@@ -1,44 +1,17 @@
 import Review from "../models/review.model.js";
-import Clinic from "../models/clinic.model.js";
-import Service from "../models/service.model.js";
-import PetFriendly from "../models/petfriendly.model.js";
+import Product from "../models/product.model.js";
 
 // @desc Create a review
 // @route POST /review
 // @access Private -> seller, admin
 export const createReview = async (req, res, next) => {
   const review = new Review();
-  const {
-    reviewerID,
-    productType,
-    clinicID,
-    serviceID,
-    petFriendlyID,
-    comment,
-    rating,
-  } = req.body.review;
+  const {reviewerID, productID, comment, rating} = req.body.review;
   if (reviewerID) review.reviewerID = reviewerID;
-  if (productType) review.productType = productType;
-  if (clinicID) review.clinicID = clinicID;
-  if (serviceID) review.serviceID = serviceID;
-  if (petFriendlyID) review.petFriendlyID = petFriendlyID;
   if (comment) review.comment = comment;
   if (rating) review.rating = rating;
 
-  let Product;
-  let findID;
-  if (productType == "clinic") {
-    Product = Clinic;
-    findID = clinicID;
-  } else if (productType == "service") {
-    Product = Service;
-    findID = serviceID;
-  } else if (productType == "petfriendly") {
-    Product = PetFriendly;
-    findID = petFriendlyID;
-  }
-
-  let product = await Product.findById(findID);
+  let product = await Product.findById(productID);
   if (!product) {
     return res.status(404).send({
       error: "Product not found",
@@ -67,24 +40,12 @@ export const createReview = async (req, res, next) => {
 };
 
 // @desc Get all reviews
-// @route POST /review
+// @route POST /review/:id
 // @access Public
 export const getReviews = async (req, res, next) => {
   let condition = {};
-  const type = req.params.type;
-  if (type == "clinic") {
-    if (req.query.id) condition.clinicID = req.query.id;
-  } else if (type == "service") {
-    if (req.query.id) condition.serviceID = req.query.id;
-  } else if (type == "petfriendly") {
-    if (req.query.id) condition.petFriendlyID = req.query.id;
-  } else {
-    return res.status(500).json({
-      message:
-        "request parameter must be 'clinic' or 'service' or 'petfriendly'",
-    });
-  }
-  condition.productType = type;
+  if (req.params.id) condition.productID = req.params.id;
+
   try {
     let reviews = await Review.find(condition).populate("reviewerID");
     reviews.sort(function (a, b) {

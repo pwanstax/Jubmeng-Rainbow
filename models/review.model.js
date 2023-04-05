@@ -7,22 +7,9 @@ const ReviewSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "can't be blank"],
     },
-    productType: {
-      type: String,
-      enum: ["clinic", "service", "petfriendly"],
-      required: [true, "can't be blank"],
-    },
-    clinicID: {
+    productID: {
       type: mongoose.ObjectId,
-      ref: "Clinic",
-    },
-    serviceID: {
-      type: mongoose.ObjectId,
-      ref: "Service",
-    },
-    petFriendlyID: {
-      type: mongoose.ObjectId,
-      ref: "PetFriendly",
+      ref: "Product",
     },
     comment: {
       type: String,
@@ -41,10 +28,7 @@ const ReviewSchema = new mongoose.Schema(
 ReviewSchema.methods.toAuthJSON = function () {
   return {
     reviewerID: this.reviewerID,
-    productType: this.productType,
-    clinicID: this.clinicID || "",
-    serviceID: this.serviceID || "",
-    petFriendlyID: this.petFriendlyID || "",
+    productID: this.productID || "",
     comment: this.comment,
     rating: this.rating,
   };
@@ -54,10 +38,7 @@ ReviewSchema.methods.toProductDetailJSON = function () {
   return {
     reviewer: this.reviewerID.username,
     reviewerImg: this.reviewerID.image,
-    productType: this.productType,
-    clinicID: this.clinicID || "",
-    serviceID: this.serviceID || "",
-    petFriendlyID: this.petFriendlyID || "",
+    productID: this.productID || "",
     comment: this.comment,
     rating: this.rating,
     createdAtDateTime: this.createdAt,
