@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
-import {uploadImage, getImageUrl} from "../utils/gcs.utils.js";
+import {uploadImage, getImageUrl, deleteImage} from "../utils/gcs.utils.js";
 import {
   serviceTags,
   petTags,
@@ -183,4 +183,28 @@ export const getTags = (req, res, next) => {
     petTags: petTags,
     serviceTags: serviceTags,
   });
+};
+
+// @desc Delete specific product
+// @route DELETE /product/:id
+// @access Private [owner]
+export const deleteProduct = async (req, res, next) => {
+  const id = req.params.id;
+  const owner = req.body.owner; //username
+  try {
+    const product = await Product.findById(id);
+    if (product && product.owner === owner) {
+      //delete in gcs
+      const imagesToRemove = product.images;
+      for (const image of imagesToRemove) {
+        await deleteImage(process.env.GCS_MERCHANT_IMAGES_BUCKET, "", image);
+      }
+      //delete product in mongo
+      await Product.deleteOne({_id: id});
+      return res.json({message: "deleted"});
+    }
+    return res.status(401).json({message: "Must be owner to delete"});
+  } catch (err) {
+    return res.status(500).json({message: err.message});
+  }
 };

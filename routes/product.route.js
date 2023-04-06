@@ -5,6 +5,7 @@ import {
   getProductInfo,
   getMyProducts,
   getTags,
+  deleteProduct,
 } from "../controllers/product.controller.js";
 import auth from "../middlewares/jwt.middleware.js";
 import {upload} from "../middlewares/image.middleware.js";
@@ -20,7 +21,8 @@ router
     createProduct
   );
 
-router.route("/product/:id").get(getProductInfo);
+router.route("/product/:id").get(getProductInfo).delete(deleteProduct);
+// .delete(auth.required, deleteProduct);
 router.route("/products/me/:username").get(auth.required, getMyProducts);
 router.route("/products/tags").get(getTags);
 export default router;
