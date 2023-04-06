@@ -254,9 +254,17 @@ export const getSaveForLater = async (req, res, next) => {
   const {user_id} = req.headers;
   try {
     const user = await User.findOne({_id: user_id}).populate({
-      path: "saveForLater._id",
+      path: "saveForLater",
     });
-    return res.json({data: user.getSaveForLater()});
+
+    const transformedSaveForLater = await Promise.all(
+      user.saveForLater.map(async (e) => {
+        const product = await e.toProductJSON();
+        product.isSaved = true;
+        return product;
+      })
+    );
+    return res.json(transformedSaveForLater);
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
@@ -267,7 +275,7 @@ export const getSaveForLater = async (req, res, next) => {
 // @access Private
 export const addSaveForLater = async (req, res, next) => {
   const {user_id} = req.headers;
-  const {productId, productType} = req.body;
+  const {productId} = req.body;
 
   let product = await Product.findById(productId);
   if (!product) {
@@ -277,9 +285,11 @@ export const addSaveForLater = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findByIdAndUpdate(user_id, {
-      $addToSet: {saveForLater: {_id: productId, productType}},
-    });
+    const user = await User.findByIdAndUpdate(
+      user_id,
+      {$addToSet: {saveForLater: productId}},
+      {new: true}
+    );
     res
       .status(200)
       .json({message: `productId ${productId} added to save for later`});
@@ -294,10 +304,16 @@ export const addSaveForLater = async (req, res, next) => {
 export const deleteSaveForLater = async (req, res, next) => {
   const {user_id} = req.headers;
   const {productId} = req.body;
+
   try {
-    const user = await User.findByIdAndUpdate(user_id, {
-      $pull: {saveForLater: {_id: productId}},
-    });
+    const user = await User.findByIdAndUpdate(
+      user_id,
+      {$pull: {saveForLater: productId}},
+      {new: true}
+    );
+    if (!user) {
+      return res.status(404).json({message: "User not found"});
+    }
     res
       .status(200)
       .json({message: `productId ${productId} deleted from save for later`});

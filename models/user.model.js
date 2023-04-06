@@ -65,16 +65,8 @@ const UserSchema = new mongoose.Schema(
     },
     saveForLater: [
       {
-        _id: {
-          type: mongoose.ObjectId,
-          required: true,
-          refPath: "saveForLater.productType",
-        },
-        productType: {
-          type: String,
-          required: true,
-          enum: ["Clinic", "PetFriendly", "Service"],
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
       },
     ],
     hash: String,
@@ -133,13 +125,6 @@ UserSchema.methods.getNavbarInfoJSON = async function () {
     user_id: this._id,
     image: imageUrl,
     isLessor: this.isSeller,
-  };
-};
-
-UserSchema.methods.getSaveForLater = function () {
-  return {
-    saveForLater: this.saveForLater,
-    count: this.saveForLater.length,
   };
 };
 
