@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import {isValidImageUrl} from "../utils/regx.utils.js";
+import {getImageUrl} from "../utils/gcs.utils.js";
 
 const ReviewSchema = new mongoose.Schema(
   {
@@ -33,11 +35,22 @@ ReviewSchema.methods.toAuthJSON = function () {
     rating: this.rating,
   };
 };
-ReviewSchema.methods.toProductDetailJSON = function () {
+ReviewSchema.methods.toProductDetailJSON = async function () {
   const options = {day: "numeric", month: "long", year: "numeric"};
+  let reviewerImgUri = "";
+  if (!isValidImageUrl(this.reviewerID.image)) {
+    let imageUrl = await getImageUrl(
+      process.env.GCS_PROFILE_BUCKET,
+      null,
+      this.reviewerID.image
+    );
+    reviewerImgUri = imageUrl;
+  } else {
+    reviewerImgUri = this.reviewerID.image;
+  }
   return {
     reviewer: this.reviewerID.username,
-    reviewerImg: this.reviewerID.image,
+    reviewerImg: reviewerImgUri,
     productID: this.productID || "",
     comment: this.comment,
     rating: this.rating,
@@ -53,11 +66,11 @@ ReviewSchema.statics.sortReviews = function (reviews, reqSort) {
     reviews.sort((a, b) => (a.rating > b.rating ? -1 : 1));
   } else if (reqSort == "oldest") {
     reviews.sort((a, b) =>
-      new Date(a.createdAtDateTime) < new Date(b.createdAtDateTime) ? -1 : 1
+      new Date(a.createdAt) < new Date(b.createdAt) ? -1 : 1
     );
   } else if (reqSort == "newest") {
     reviews.sort((a, b) =>
-      new Date(a.createdAtDateTime) > new Date(b.createdAtDateTime) ? -1 : 1
+      new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1
     );
   }
   return reviews;

@@ -283,10 +283,7 @@ export const checkOpenOrClose = (openHours, manualClose) => {
         if (period.openAt <= nowTime && period.closeAt >= nowTime) {
           return ["Open", getTimeFromInt(period.closeAt)];
         } else if (period.openAt > nowTime) {
-          return [
-            "Closed",
-            `${mapDays.get(e.day)} at ${getTimeFromInt(period.openAt)}`,
-          ];
+          return ["Closed", `Today at ${getTimeFromInt(period.openAt)}`];
         }
       }
     } else if (passNowDay) {

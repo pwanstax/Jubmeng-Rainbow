@@ -1,5 +1,6 @@
 import Review from "../models/review.model.js";
 import Product from "../models/product.model.js";
+import mongoose from "mongoose";
 
 // @desc Create a review
 // @route POST /review
@@ -8,6 +9,7 @@ export const createReview = async (req, res, next) => {
   const review = new Review();
   const {reviewerID, productID, comment, rating} = req.body.review;
   if (reviewerID) review.reviewerID = reviewerID;
+  if (productID) review.productID = productID;
   if (comment) review.comment = comment;
   if (rating) review.rating = rating;
 
@@ -52,12 +54,18 @@ export const getReviews = async (req, res, next) => {
       return b.rating - a.rating;
     });
     const sortedReviews = await Review.sortReviews(reviews, req.query.sort);
-    const sendReviews = sortedReviews.map((e) => e.toProductDetailJSON());
+    const sendReviews = await Promise.all(
+      sortedReviews.map(async (e) => await e.toProductDetailJSON())
+    );
     const ratingCount = await Review.aggregate([
+      {
+        $match: {
+          productID: new mongoose.Types.ObjectId(condition.productID),
+        },
+      },
       {$group: {_id: "$rating", count: {$sum: 1}}},
       {$project: {_id: 0, rating: "$_id", count: 1}},
     ]);
-    console.log(ratingCount);
     return res.json({reviews: sendReviews, ratingCount: ratingCount});
   } catch (err) {
     return res.status(500).json({message: err.message});
