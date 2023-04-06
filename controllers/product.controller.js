@@ -162,13 +162,15 @@ export const getMyProducts = async (req, res, next) => {
     const condition = makeCondition(null, null, null, {
       owner: username,
     });
-    let myProducts = await Product.find(condition);
-    myProducts = myProducts.map((e) => {
-      const product = e.toProductJSON();
-      return product;
-    });
+    const myProducts = await Product.find(condition);
+    const transformedProducts = await Promise.all(
+      myProducts.map(async (e) => {
+        const product = await e.toProductJSON();
+        return product;
+      })
+    );
     res.send({
-      myProducts: myProducts,
+      myProducts: transformedProducts,
     });
   } catch (error) {
     res.status(500).json({message: error.message});
