@@ -21,8 +21,10 @@ router
     createProduct
   );
 
-router.route("/product/:id").get(getProductInfo).delete(deleteProduct);
-// .delete(auth.required, deleteProduct);
+router
+  .route("/product/:id")
+  .get(getProductInfo)
+  .delete(auth.required, deleteProduct);
 router.route("/products/me/:username").get(auth.required, getMyProducts);
 router.route("/products/tags").get(getTags);
 export default router;
