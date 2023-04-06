@@ -1,6 +1,7 @@
 import moment from "moment-timezone";
 import dotenv from "dotenv";
 import {getTimeFromInt} from "../utils/time.utils.js";
+import User from "../models/user.model.js";
 
 export const petTags = [
   "Cat",
@@ -296,4 +297,23 @@ export const checkOpenOrClose = (openHours, manualClose) => {
     return ["Closed", firstOpen];
   }
   return ["Closed", openAgain];
+};
+
+export const setFavorited = async (user_id, products) => {
+  if (user_id) {
+    let saveForLater = [];
+    try {
+      const user = await User.findOne({_id: user_id}, {saveForLater: 1});
+      saveForLater = user.saveForLater;
+
+      for (let product of products) {
+        if (saveForLater.includes(product.id)) {
+          product.isSaved = true;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  return products;
 };

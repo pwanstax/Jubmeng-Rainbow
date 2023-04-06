@@ -7,7 +7,9 @@ import {
   filterByOpen,
   makeCondition,
   sortProducts,
+  setFavorited,
 } from "../helpers/product.helpers.js";
+
 import {ObjectId} from "bson";
 
 // @desc Create product
@@ -115,6 +117,8 @@ export const createProduct = async (req, res, next) => {
 // @access Public
 export const getProducts = async (req, res, next) => {
   let condition = {};
+  let user_id = req.headers.user_id;
+
   try {
     condition = makeCondition(
       req.query.name,
@@ -134,6 +138,9 @@ export const getProducts = async (req, res, next) => {
     );
 
     products = sortProducts(products, req.query.sort);
+
+    products = await setFavorited(user_id, products);
+
     return res.json(products);
   } catch (err) {
     return res.status(500).json({message: err.message});
