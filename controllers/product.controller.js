@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
-import {uploadImage, getImageUrl, deleteImage} from "../utils/gcs.utils.js";
+import {uploadImage, deleteImage} from "../utils/gcs.utils.js";
 import {
   serviceTags,
   petTags,
@@ -184,16 +184,6 @@ export const getMyProducts = async (req, res, next) => {
   }
 };
 
-// @desc Get all Tags of product
-// @route GET /products/tags
-// @access Public
-export const getTags = (req, res, next) => {
-  return res.json({
-    petTags: petTags,
-    serviceTags: serviceTags,
-  });
-};
-
 // @desc Delete specific product
 // @route DELETE /product/:id
 // @access Private [owner]
@@ -216,4 +206,109 @@ export const deleteProduct = async (req, res, next) => {
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
+};
+
+// @desc Update own product
+// @route PATCH /product/:id
+// @access Private [owner]
+export const updateProductInfo = async (req, res, next) => {
+  const user_id = req.headers.user_id;
+  const product_id = req.params.id;
+
+  try {
+    let product = await Product.findById(product_id);
+    if (!product) {
+      return res.status(404).json({message: "Product not found."});
+    }
+
+    // Remove image //
+    const imagesURLToRemove = [];
+    if (req.body.delete_image) {
+      let delete_images = [];
+      if (typeof req.body.delete_image !== "object") {
+        delete_images = [req.body.delete_image];
+      } else {
+        delete_images = req.body.delete_image;
+      }
+      for (const url of delete_images) {
+        const regex = /jubmeng-merchant-images\/(.+?)\?GoogleAccessId/;
+        const match = url.match(regex);
+        if (match && match[1]) {
+          const pathSubstring = match[1];
+          imagesURLToRemove.push(pathSubstring);
+        } else {
+          console.log("Pattern not found");
+        }
+      }
+      await Product.findOneAndUpdate(
+        {_id: product_id},
+        {
+          $pull: {images: {$in: imagesURLToRemove}},
+        },
+        {new: true},
+        (err, product) => {
+          if (err) {
+            console.log(err);
+          }
+        }
+      );
+    }
+    for (const image of imagesURLToRemove) {
+      await deleteImage(process.env.GCS_MERCHANT_IMAGES_BUCKET, "", image);
+    }
+
+    // Add image //
+    if (req.files && req.files["images"]) {
+      const image_uris = [];
+      for (const image of req.files["images"]) {
+        const imageUri = await uploadImage(
+          image,
+          process.env.GCS_MERCHANT_IMAGES_BUCKET,
+          `${user_id}/${product_id}`,
+          null
+        );
+        image_uris.push(imageUri);
+      }
+      Product.findOneAndUpdate(
+        {_id: product_id},
+        {
+          $push: {images: {$each: image_uris}},
+        },
+        {new: true},
+        (err, product) => {
+          if (err) {
+            console.log(err);
+          }
+        }
+      );
+    }
+
+    // Update other parts //
+    Product.findOneAndUpdate(
+      {_id: product_id},
+      {$set: req.body},
+      {new: true},
+      (err, product) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(product);
+        }
+      }
+    );
+    res.send({message: `Product ID: ${product_id} updated`});
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({message: err.message});
+  }
+};
+
+// @desc Get all Tags of product
+// @route GET /products/tags
+// @access Public
+export const getTags = (req, res, next) => {
+  return res.json({
+    petTags: petTags,
+    serviceTags: serviceTags,
+  });
 };

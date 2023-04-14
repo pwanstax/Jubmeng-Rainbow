@@ -6,6 +6,7 @@ import {
   getMyProducts,
   getTags,
   deleteProduct,
+  updateProductInfo,
 } from "../controllers/product.controller.js";
 import auth from "../middlewares/jwt.middleware.js";
 import {upload} from "../middlewares/image.middleware.js";
@@ -24,7 +25,12 @@ router
 router
   .route("/product/:id")
   .get(getProductInfo)
-  .delete(auth.required, deleteProduct);
+  .delete(auth.required, deleteProduct)
+  .patch(
+    auth.required,
+    upload.fields([{name: "images", maxCount: 10}]),
+    updateProductInfo
+  );
 router.route("/products/me/:username").get(auth.required, getMyProducts);
 router.route("/products/tags").get(getTags);
 export default router;
