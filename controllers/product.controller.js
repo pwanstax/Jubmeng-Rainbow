@@ -325,14 +325,8 @@ export const getRecommendProducts = async (req, res, next) => {
       req.query.latitude,
       req.query.longitude
     );
-    const newProducts = sortProducts(products, "newest");
-    const nearByProducts = sortProducts(products, "closest_location");
-    const popularProducts = sortProducts(products, "highest_reviews");
-    return res.json({
-      newArrival: newProducts.slice(0, Math.min(4, newProducts.length)),
-      nearBy: nearByProducts.slice(0, Math.min(4, nearByProducts.length)),
-      popular: popularProducts.slice(0, Math.min(4, popularProducts.length)),
-    });
+    products = sortProducts(products, req.query.sort);
+    return res.send(products.slice(0, Math.min(4, products.length)));
   } catch (err) {
     return res.status(500).json({message: err.message});
   }
