@@ -1,4 +1,4 @@
-export const distance = (lat1, lon1, lat2, lon2) => {
+export const getDistance = (lat1, lon1, lat2, lon2) => {
   if (lat1 == lat2 && lon1 == lon2) {
     return 0;
   } else {

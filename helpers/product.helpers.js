@@ -2,6 +2,7 @@ import moment from "moment-timezone";
 import dotenv from "dotenv";
 import {getTimeFromInt} from "../utils/time.utils.js";
 import User from "../models/user.model.js";
+import {getDistance} from "../utils/map.utils.js";
 
 export const petTags = [
   "Cat",
@@ -145,7 +146,7 @@ export const filterByOpen = async (product, condition, reqLat, reqLng) => {
 
   for (const product of products) {
     if (reqLat && reqLng) {
-      product.distance = distance(
+      product.distance = getDistance(
         product.location.coordinates[1],
         product.location.coordinates[0],
         reqLat,
@@ -205,16 +206,19 @@ export const makeCondition = (
 };
 
 export const sortProducts = (products, reqSort) => {
+  let productsCopy = [...products];
   if (reqSort == "closest_location") {
-    products.sort((a, b) => (a.distance < b.distance ? -1 : 1));
+    productsCopy.sort((a, b) => (a.distance < b.distance ? -1 : 1));
   } else if (reqSort == "lowest_rating") {
-    products.sort((a, b) => (a.rating < b.rating ? -1 : 1));
+    productsCopy.sort((a, b) => (a.rating < b.rating ? -1 : 1));
   } else if (reqSort == "highest_rating") {
-    products.sort((a, b) => (a.rating > b.rating ? -1 : 1));
+    productsCopy.sort((a, b) => (a.rating > b.rating ? -1 : 1));
   } else if (reqSort == "highest_reviews") {
-    products.sort((a, b) => (a.reviewCounts > b.reviewCounts ? -1 : 1));
+    productsCopy.sort((a, b) => (a.reviewCounts > b.reviewCounts ? -1 : 1));
+  } else if (reqSort == "newest") {
+    productsCopy.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
   }
-  return products;
+  return productsCopy;
 };
 
 export const formatOpenHours = (openHours) => {
