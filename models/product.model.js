@@ -195,6 +195,7 @@ ProductSchema.methods.toProductJSON = async function () {
     openHours: formatOpenHours(this.openHours),
     placeType: this.placeType || "",
     openStatusTimeDetail: checkOpenOrClose(this.openHours, this.manualClose)[1],
+    createdAt: this.createdAt,
   };
 };
 

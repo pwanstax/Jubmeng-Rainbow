@@ -7,6 +7,7 @@ import {
   getTags,
   deleteProduct,
   updateProductInfo,
+  getRecommendProducts,
 } from "../controllers/product.controller.js";
 import auth from "../middlewares/jwt.middleware.js";
 import {upload} from "../middlewares/image.middleware.js";
@@ -33,4 +34,5 @@ router
   );
 router.route("/products/me/:username").get(auth.required, getMyProducts);
 router.route("/products/tags").get(getTags);
+router.route("/products/recommend").get(getRecommendProducts);
 export default router;
