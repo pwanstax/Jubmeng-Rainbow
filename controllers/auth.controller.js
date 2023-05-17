@@ -51,7 +51,7 @@ export const login = (req, res, next) => {
 
       res.cookie("auth", cookieData, {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "none",
         secure: true,
         expires: 0,
         path: "/",
