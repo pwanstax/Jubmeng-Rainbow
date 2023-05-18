@@ -153,7 +153,7 @@ export const filterByOpen = async (product, condition, reqLat, reqLng) => {
         reqLng
       );
     }
-    delete product.location;
+    // delete product.location;
   }
 
   return products;
